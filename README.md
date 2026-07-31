@@ -14,7 +14,7 @@ This flake manages:
 - **Theme System**: Stylix (wallpaper-based) + Greybird GTK theme
 - **Notifications**: Dunst
 - **Secrets**: SOPS-nix for WiFi passwords, SSH keys, and other secrets
-- **Gaming**: Gamescope, Gamemode, Lutris, Heroic, MangoHud
+- **Gaming**: Gamescope, Gamemode, Lutris, Heroic, MangoHud, RetroArch (with RetroAchievements)
 
 ## Desktop
 
@@ -79,7 +79,7 @@ nixos-dotfiles/
 │   │   ├── development-tools.nix   # Rust, Python, C/C++, Nix, LaTeX
 │   │   ├── devshells/              # Pinned dev environments (c-dev, py-dev, rs-dev)
 │   │   ├── doom.nix                # Doom Emacs (nix-doom-emacs-unstraightened)
-│   │   ├── gaming.nix              # goverlay (MangoHud GUI)
+│   │   ├── gaming.nix              # goverlay, RetroArch + RetroAchievements, BIOS seeding
 │   │   ├── firefox.nix             # Firefox with GPU accel
 │   │   ├── ghostty.nix             # Ghostty terminal (Stylix)
 │   │   ├── kitty.nix               # Kitty terminal (Stylix)
@@ -163,6 +163,16 @@ The RTX 4060 uses proprietary NVIDIA modules with:
 - VA-API hardware video decode
 - 32-bit graphics support for Proton games
 
+### RetroArch
+
+RetroArch is built from `retroarch-bare` (nixpkgs has no `programs.retroarch` module) and configured in `home-manager/utilities/gaming.nix`.
+
+- **Cores**: NES (`mesen`), SNES (`bsnes-hd` + `snes9x`), N64 (`mupen64plus`), PS1 (`beetle-psx-hw`), PS2 (`pcsx2`), GameCube/Wii (`dolphin`), GBA (`mgba`), Dreamcast (`flycast`), Sega Saturn (`beetle-saturn`)
+- **Video**: Vulkan on the RTX 4060, fullscreen, nearest-neighbour scaling, vsync on
+- **Upscaling**: seeded into `retroarch-core-options.cfg` on first run (only if the file is absent) — 4x internal resolution on PS1/PS2/GameCube, 6x Saturn, 1440x1440 Dreamcast, HD supersampling on SNES
+- **BIOS**: the ~8 MB of BIOS/system files actually required (PS1, PS2, Dreamcast, Saturn) are downloaded into `~/Emulation/bios` from [Abdess/retrobios](https://github.com/Abdess/retrobios) (pinned to a commit) only if missing, placed in the layout RetroArch cores expect. NES/SNES/N64/GBA/GC need no BIOS.
+- **RetroAchievements**: enabled globally (hardcore mode off, so rewind/savestates stay usable). Credentials are stored in sops (`retroachievements-username`/`retroachievements-password` in `system/secrets/secrets.yaml`) and seeded into RetroArch's config at activation, so they never land in the nix store.
+
 ## Rebuilding
 
 ```bash
@@ -183,7 +193,7 @@ export EDITOR="emacsclient -a ''"
 sops system/secrets/secrets.yaml
 ```
 
-See [docs/secrets.md](docs/secrets.md) for setup instructions.
+Secrets include WiFi, PIA VPN, and the RetroAchievements credentials (`retroachievements-username` / `retroachievements-password`). See [docs/secrets.md](docs/secrets.md) for setup instructions.
 
 ## Documentation
 

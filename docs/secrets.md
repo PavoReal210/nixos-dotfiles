@@ -58,11 +58,26 @@ Use vim as the SOPS editor:
 EDITOR=vim sops system/secrets/secrets.yaml
 ```
 
+## Adding RetroAchievements credentials
+
+RetroArch's RetroAchievements login is stored in `retroachievements-username` / `retroachievements-password`:
+
+1. Edit the secrets:
+   ```bash
+   sops system/secrets/secrets.yaml
+   ```
+2. Add the two keys:
+   ```yaml
+   retroachievements-username: "your_username"
+   retroachievements-password: "your_password"
+   ```
+3. Rebuild home (`nh home switch`). The values are seeded into `~/.config/retroarch/retroarch.cfg` at activation, never into the nix store.
+
 ## Encrypted Files
 
 | File | Purpose |
 |------|---------|
-| `secrets.yaml` | Main secrets (WiFi, PIA VPN credentials) |
+| `secrets.yaml` | Main secrets (WiFi, PIA VPN, RetroAchievements) |
 | `github-ssh-key.age` | GitHub SSH private key |
 | `github-ssh-key.pub` | GitHub SSH public key (encrypted with age) |
 | `pia.age` | PIA VPN configuration |
