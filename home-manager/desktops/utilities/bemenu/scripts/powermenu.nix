@@ -11,7 +11,7 @@ let
       "⏻ Shutdown") systemctl poweroff ;;
       "⏼ Restart")   systemctl reboot ;;
       "󰤄 Suspend")   systemctl suspend ;;
-      " Lock")
+      " Lock")
         ${pkgs.hyprlock}/bin/hyprlock
         ;;
       "󰍃 Logout")
