@@ -5,8 +5,7 @@
   config,
   pkgs,
   ...
-}:
-{
+}: {
   programs.zsh = {
     enable = true;
     autosuggestion.enable = true;
@@ -67,6 +66,9 @@
       nsr = "sudo nixos-rebuild switch --flake ${config.home.homeDirectory}/GitRepos/nixos-dotfiles\\#railgun";
       nrt = "sudo nixos-rebuild test --flake ${config.home.homeDirectory}/GitRepos/nixos-dotfiles\\#railgun";
       hms = "home-manager switch --flake ${config.home.homeDirectory}/GitRepos/nixos-dotfiles\\#railgun-linux-desktop --cores 0 -j auto";
+
+      # Backup — make the Dallas 5TB drive writable and claim ownership of the borg repo
+      mount-dallas-zero = "sudo sh -c 'mount -o remount,rw /run/media/railgun/dallas_0 && chown -R railgun:users /run/media/railgun/dallas_0/railgun-desktop-backup'";
 
       # System — do a full stack re-system + home-manager update + rebuild
       update = "cd ${config.home.homeDirectory}/GitRepos/nixos-dotfiles && nfu && nsr && hms";
