@@ -50,5 +50,6 @@
 
     # System tools
     gparted # Partition editor
+    hyprpolkitagent # Polkit auth agent (lets pkexec apps like gparted prompt for password)
   ];
 }

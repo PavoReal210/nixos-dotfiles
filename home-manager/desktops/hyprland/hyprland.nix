@@ -284,6 +284,9 @@ in
         # Idle inhibitors
         "${pkgs.wljoywake}/bin/wljoywake -t 10" # Inhibit idle on gamepad input
         "${pkgs.wayland-pipewire-idle-inhibit}/bin/wayland-pipewire-idle-inhibit" # Inhibit idle on media playback
+
+        # Polkit auth agent (required for pkexec prompts, e.g. gparted)
+        "${pkgs.hyprpolkitagent}/libexec/hyprpolkitagent"
       ];
 
       # ── Default Workspace ──────────────────────────────────────────────────
