@@ -13,10 +13,6 @@
     ./gaming.nix
     ./ghostty.nix
     ./kitty.nix
-    ./mpd.nix
-    ./mpd-mpris.nix
-    ./rmpc.nix
-    ./beets.nix
     ./p10k.nix
     ./thunderbird.nix
     ./ssh.nix

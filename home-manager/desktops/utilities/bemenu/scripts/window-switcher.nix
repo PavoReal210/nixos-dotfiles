@@ -15,6 +15,7 @@ let
         "thunar"|"Thunar")             icon="" ;;
         "code"|"Code"|"code-oss")      icon="" ;;
         "vlc"|"VLC")                   icon="󰕼" ;;
+        "strawberry"|"Strawberry")     icon="" ;;
         "thunderbird"|"Thunderbird")   icon="" ;;
         "steam"|"Steam")               icon="" ;;
         "Anki")                        icon="" ;;
