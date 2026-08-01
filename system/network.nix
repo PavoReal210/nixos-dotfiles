@@ -26,6 +26,13 @@
     hostName = "railgun-linux-desktop";
     networkmanager = {
       enable = true;
+      # Push DNS via systemd-resolved instead of letting NetworkManager write
+      # /etc/resolv.conf directly. Required so the PIA VPN CLI's resolvectl-based
+      # DNS handling (system/vpn.nix) coexists with NetworkManager; otherwise the
+      # two fight over resolv.conf, and when the VPN tunnel dies (e.g. suspend)
+      # a stale PIA nameserver gets left in place, breaking DNS until resolv.conf
+      # is regenerated.
+      dns = "systemd-resolved";
       ensureProfiles = {
         environmentFiles = [
           config.sops.secrets."wifi".path

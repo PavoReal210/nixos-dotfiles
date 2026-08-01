@@ -34,6 +34,23 @@
     "m /etc/sops/age/keys.txt 0644 root root"
   ];
 
+  # ── systemd-resolved ────────────────────────────────────────────────────────
+  #
+  # DNS fix: PIA's DNS integration (dns.enable below) writes the PIA nameserver
+  # 10.0.0.243 into /etc/resolv.conf. That address is only reachable through the
+  # WireGuard tunnel, and the pia CLI only restores the original file on a clean
+  # `wg-quick down`. When the tunnel was torn down on suspend/resume, resolv.conf
+  # was left pointing at 10.0.0.243 with no tunnel to route it, killing DNS
+  # entirely (reproduced 2026-07-31; fixed by regenerating /etc/resolv.conf).
+  #
+  # The pia CLI checks `systemctl is-active systemd-resolved`: when resolved is
+  # running it sets per-interface DNS via `resolvectl` instead of clobbering
+  # /etc/resolv.conf, so DNS is cleanly reverted on disconnect and automatically
+  # dropped when the tunnel interface disappears (e.g. on suspend). Enabling it
+  # here makes `dns.enable` safe. NetworkManager must also push DNS to resolved
+  # instead of writing /etc/resolv.conf itself — see system/network.nix.
+  services.resolved.enable = true;
+
   # pia re-execs connect/disconnect as root via ensure_root()
   # It checks for doas first, then sudo. Without a TTY, sudo
   # can't prompt for a password, so doas with NOPASSWD handles it.
