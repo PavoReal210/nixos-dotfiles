@@ -45,8 +45,8 @@
     # Shell aliases
     shellAliases = {
       # General
-      ll = "eza -la --icons";
-      ls = "eza --icons";
+      ll = "eza -la --icons=auto";
+      ls = "eza --icons=auto";
       cat = "bat";
       grep = "rg";
       find = "fd";

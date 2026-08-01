@@ -48,6 +48,16 @@
     ];
   };
 
+  # Archive right-click support: thunar-archive-plugin adds "Extract Here" /
+  # "Extract To..." to the context menu; file-roller is the GUI backend that
+  # performs the extraction. unrar + unar cover .rar (incl. RAR5) and other
+  # formats that file-roller shells out to.
+  environment.systemPackages = with pkgs; [
+    file-roller
+    unrar
+    unar
+  ];
+
   programs.xfconf.enable = true;
 
   environment.etc."udisks2/mount_options.conf".text = ''
