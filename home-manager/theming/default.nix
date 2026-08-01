@@ -5,6 +5,5 @@
     ./fastfetch
     ./font-settings.nix
     ./stylix.nix
-    ./greybird.nix
   ];
 }

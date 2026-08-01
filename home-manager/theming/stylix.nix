@@ -64,7 +64,8 @@
       };
     };
 
-    # GTK icon theme (theme handled by greybird.nix)
+    # GTK widgets are themed by stylix.targets.gtk (its default theme, no
+    # custom theme derivation needed). Only the icon theme is set here.
     gtk = {
       enable = true;
       iconTheme = {

@@ -28,6 +28,12 @@ in
   wayland.windowManager.hyprland = {
     enable = true;
 
+    # Keep using the hyprlang config syntax.
+    # home-manager's default for `configType` changed from "hyprlang" to "lua"
+    # (for stateVersion >= 26.05). We pin "hyprlang" so the `settings` block
+    # below keeps working exactly as written, and to silence the eval warning.
+    configType = "hyprlang";
+
     settings = {
       # Define the SUPER key variable so bind lines can reference $modifier.
       "$modifier" = "SUPER";

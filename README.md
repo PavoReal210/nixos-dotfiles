@@ -11,7 +11,7 @@ This flake manages:
 - **Launcher**: Bemenu
 - **Terminal**: Ghostty / Kitty
 - **Editor**: Doom Emacs (via nix-doom-emacs-unstraightened) + vanilla Neovim
-- **Theme System**: Stylix (wallpaper-based) + Greybird GTK theme
+- **Theme System**: Stylix (wallpaper-based)
 - **Notifications**: Dunst
 - **Secrets**: SOPS-nix for WiFi passwords, SSH keys, and other secrets
 - **Gaming**: Gamescope, Gamemode, Lutris, Heroic, MangoHud, RetroArch (with RetroAchievements)
@@ -73,7 +73,6 @@ nixos-dotfiles/
 │   ├── home.nix                    # Main entry + session vars
 │   ├── theming/                    # Stylix, fonts, fastfetch
 │   │   ├── stylix.nix             # Stylix configuration
-│   │   ├── greybird.nix           # Greybird GTK theme with Stylix colors
 │   ├── utilities/                  # Apps and tools
 │   │   ├── common-packages.nix     # GUI + CLI packages
 │   │   ├── development-tools.nix   # Rust, Python, C/C++, Nix, LaTeX
@@ -120,9 +119,9 @@ Key details:
 
 A minimal Neovim installation (no plugins) is available for quick terminal edits. `EDITOR` and `VISUAL` are set to `emacsclient -a ''`.
 
-## Theme System (Stylix + Greybird)
+## Theme System (Stylix)
 
-Colors are managed via Stylix, which generates a base16 palette from the current wallpaper. The GTK theme is built using a [forked Greybird](https://github.com/breitnw/Greybird) that accepts custom accent colors:
+Colors are managed via Stylix, which generates a base16 palette from the current wallpaper:
 
 ```nix
 stylix.image = ../wallpapers/still_wallpapers/wallhaven-1p5z29.jpg;
@@ -131,9 +130,9 @@ stylix.image = ../wallpapers/still_wallpapers/wallhaven-1p5z29.jpg;
 
 Colors are applied to:
 - Hyprland, Waybar, Bemenu, Hyprlock
-- GTK (Greybird theme), Qt, Ghostty, Kitty, Firefox, VSCode, Anki
+- GTK, Qt, Ghostty, Kitty, Firefox, VSCode, Anki
 
-The Greybird theme is built dynamically with `home-manager/theming/greybird.nix`. See [docs/greybird-stylix.md](docs/greybird-stylix.md) for details.
+GTK widgets are themed by Stylix's built-in GTK target (no custom theme derivation). The icon theme is set separately in `theming/stylix.nix`.
 
 Fonts are managed at system level (`system/fonts.nix`) with Stylix font preferences set in `theming/stylix.nix` and `theming/font-settings.nix`. Primary fonts: Terminess Nerd Font Mono (monospace), Overpass (sans), Cozette (status bars), Symbols Nerd Font Mono, Weather Icons.
 
@@ -203,7 +202,6 @@ Secrets include WiFi, PIA VPN, and the RetroAchievements credentials (`retroachi
 | [docs/secrets.md](docs/secrets.md) | SOPS secrets setup and management |
 | [docs/base16-reference.md](docs/base16-reference.md) | Base16 color palette slot reference |
 | [docs/hyprland-animations.md](docs/hyprland-animations.md) | Hyprland animation system, bezier curves, and styles |
-| [docs/greybird-stylix.md](docs/greybird-stylix.md) | Greybird GTK theme + Stylix integration |
 
 ## Notes
 
