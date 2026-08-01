@@ -370,6 +370,14 @@ in
         float = true
       }
 
+      # RetroArch — float it so the window is freely resizable and the tiling
+      # layout rules don't apply to it.
+      windowrule {
+        name = retroarch-float
+        match:class = ^(com\\.libretro\\.RetroArch)$
+        float = true
+      }
+
       # Workspace assigns
       windowrule {
         name = vlc-ws4

@@ -11,9 +11,9 @@
 
     # RetroArch — retro game emulation.
     # nixpkgs has no `programs.retroarch` module, so we wrap `retroarch-bare`.
-    # `cores` bundles the libretro cores; `settings` are merged into the base
-    # config and applied via --appendconfig, so RetroArch's own runtime config
-    # rewrites (~/.config/retroarch/retroarch.cfg) can never clobber them.
+    # `cores` bundles the libretro cores into the wrapper. All configuration is
+    # managed by RetroArch itself via ~/.config/retroarch/retroarch.cfg (the
+    # in-app menu / config file); no declarative settings are injected.
     (pkgs.retroarch-bare.wrapper {
       cores = with pkgs.libretro; [
         mesen # NES
@@ -27,48 +27,7 @@
         flycast # Dreamcast
         beetle-saturn # Sega Saturn
       ];
-      settings = {
-        # GPU: Vulkan on the RTX 4060 (Ada), Wayland-native.
-        video_driver = "vulkan";
-        menu_driver = "xmb";
-        # Fullscreen + nearest-neighbour upscaling for a crisp 4K image.
-        # Threaded video is unnecessary (and worse) under Vulkan.
-        video_fullscreen = "true";
-        video_smooth = "false";
-        video_vsync = "true";
-        video_threaded = "false";
-        aspect_ratio_index = "0";
-        video_aspect_ratio_auto = "true";
-        video_crop_overscan = "false";
-        video_force_aspect = "true";
-        video_scale_integer = "false";
-        # Audio out via PipeWire's pulseaudio compatibility layer.
-        audio_driver = "pulseaudio";
-        # Input under Wayland: udev backend + SDL2 joypad driver.
-        # ("xinput" does not exist on Wayland.)
-        input_driver = "udev";
-        input_joypad_driver = "sdl2";
-        # Pin player-1 pad and autodetect so retroarch.cfg rewrites can't
-        # drop the controller binding (same reason as the video settings).
-        input_player1_joypad_index = "0";
-        input_autodetect_enable = "true";
-        input_max_users = "8";
-        # Point cores at ~/Emulation/bios where linkRetroArchBios below puts
-        # the BIOS/system files in the layout the cores actually expect.
-        system_directory = "${config.home.homeDirectory}/Emulation/bios";
-        # RetroAchievements — the master switch is global, so every core that
-        # supports RA (NES, SNES, GBA, N64, PS1, PS2, ...) is covered at once;
-        # cores without RA support simply ignore these keys.
-        cheevos_enable = "true";
-        # Hardcore off: keep rewind/savestates/cheats usable during play.
-        # Leaderboards are then unofficial, but achievements still count.
-        cheevos_hardcore_mode_enabled = "false";
-        cheevos_richpresence_enabled = "true";
-        cheevos_leaderboards_enabled = "true";
-        cheevos_badges_enabled = "true";
-        cheevos_start_active = "true";
-        cheevos_auto_screenshot = "false";
-      };
+      settings = { };
     })
   ];
 
