@@ -37,12 +37,22 @@
         video_smooth = "false";
         video_vsync = "true";
         video_threaded = "false";
+        aspect_ratio_index = "0";
+        video_aspect_ratio_auto = "true";
+        video_crop_overscan = "false";
+        video_force_aspect = "true";
+        video_scale_integer = "false";
         # Audio out via PipeWire's pulseaudio compatibility layer.
         audio_driver = "pulseaudio";
         # Input under Wayland: udev backend + SDL2 joypad driver.
         # ("xinput" does not exist on Wayland.)
         input_driver = "udev";
         input_joypad_driver = "sdl2";
+        # Pin player-1 pad and autodetect so retroarch.cfg rewrites can't
+        # drop the controller binding (same reason as the video settings).
+        input_player1_joypad_index = "0";
+        input_autodetect_enable = "true";
+        input_max_users = "8";
         # Point cores at ~/Emulation/bios where linkRetroArchBios below puts
         # the BIOS/system files in the layout the cores actually expect.
         system_directory = "${config.home.homeDirectory}/Emulation/bios";
