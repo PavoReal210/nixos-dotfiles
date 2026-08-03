@@ -76,11 +76,16 @@ nixos-dotfiles/
 │   ├── filesystem.nix              # BTRFS mount options (zstd, noatime, ssd, discard)
 │   ├── fonts.nix                   # Nerd Fonts, Noto, Weather Icons (single source of truth)
 │   ├── locale.nix                  # Locale + timezone
-│   ├── network.nix                 # NetworkManager + SOPS WiFi
-│   ├── nix-settings.nix            # Flakes, garbage collection, store optimization, Cachix
-│   ├── power-management.nix        # amd_pstate=active, EPP, ZRAM, ananicy-cpp + resume hook
+│   ├── network.nix                 # NetworkManager + systemd-resolved + SOPS WiFi
+│   ├── nix-settings.nix            # Flakes, garbage collection, Cachix, package policy
+│   ├── cpu-performance.nix         # amd_pstate=active, EPP lock, resume hook + k10temp
+│   ├── zram.nix                    # Compressed RAM swap (memoryPercent=50)
+│   ├── ananicy.nix                 # ananicy-cpp automatic nice-level daemon
+│   ├── scheduler.nix               # CachyOS kernel + scx_rustland scheduler
 │   ├── suspend.nix                 # NVIDIA/Hyprland + scx suspend-resume robustness
 │   ├── users.nix                   # User account + zsh
+│   ├── doas.nix                    # doas (sudo replacement) for pia
+│   ├── secrets.nix                 # SOPS age keyfile + permissions
 │   ├── vpn.nix                     # PIA VPN (WireGuard) + SOPS
 │   └── secrets/                    # Encrypted SOPS secrets (age)
 ├── home-manager/                   # User-level config (home-manager)
@@ -105,7 +110,10 @@ nixos-dotfiles/
 │   └── desktops/                   # Desktop environment modules
 │       ├── common-packages.nix     # Shared compositor packages (grimshot, cliphist, etc.)
 │       ├── hyprland/
-│       │   ├── hyprland.nix        # Full Hyprland config + keybindings
+│       │   ├── hyprland.nix        # General Hyprland settings (monitors, visuals, input)
+│       │   ├── keybinds.nix        # Keybindings (bind/bindm)
+│       │   ├── exec-once.nix       # Apps launched on startup
+│       │   ├── window-rules.nix    # Layer rules + window rules
 │       │   ├── hyprlock.nix        # Hyprlock lockscreen (stylix wallpaper + colors)
 │       │   └── hypridle.nix        # Idle management (lock, dpms, suspend)
 │       └── utilities/
@@ -195,7 +203,7 @@ Suspend/resume is hardened against the classic NVIDIA + Wayland "dies on wake" h
 
 - **Hyprland is frozen during suspend** — `hyprland-suspend.service` SIGSTOPs the compositor before the GPU is suspended and `hyprland-resume.service` SIGCONTs it after wake, so it never races the GPU disappearing/reappearing.
 - **sched-ext scheduler is cycled** — `scx-suspend.service`/`scx-resume.service` unload `scx_rustland` before sleep and reload it after wake (userspace schedulers can wedge on CPU hotplug across resume).
-- **CPU performance settings re-applied on resume** — `powerManagement.resumeCommands` re-locks EPP and the 4600 MHz scaling limits after wake (`system/power-management.nix`).
+- **CPU performance settings re-applied on resume** — `powerManagement.resumeCommands` re-locks EPP and the 4600 MHz scaling limits after wake (`system/cpu-performance.nix`).
 - **Displays re-enable cleanly** — hypridle waits 1s after resume before turning DPMS back on.
 
 Locking:

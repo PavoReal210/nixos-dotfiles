@@ -1,18 +1,8 @@
 # system/base-packages.nix
 # System-wide packages available to all users
-{ pkgs, ... }:
-{
-  # Steam
-  programs.steam.enable = true;
-
-  # Allow unfree packages
-  nixpkgs.config.allowUnfree = true;
-
-  # Allow known insecure packages (EOL Electron required by some apps)
-  nixpkgs.config.permittedInsecurePackages = [
-    "electron-39.8.10"
-  ];
-
+# (Unfree/insecure package policy lives in system/nix-settings.nix;
+#  Steam is fully configured in system/gaming.nix.)
+{pkgs, ...}: {
   environment.systemPackages = with pkgs; [
     # Core utilities
     home-manager

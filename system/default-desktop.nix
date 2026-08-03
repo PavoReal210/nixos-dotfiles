@@ -1,8 +1,6 @@
 # system/default-desktop.nix
 # Hyprland desktop: compositor, XDG portals, cursor, Wayland env vars
-# (file management lives in file-management.nix, BTRFS options in filesystem.nix)
 {
-  lib,
   pkgs,
   ...
 }:

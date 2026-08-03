@@ -1,14 +1,19 @@
 # system/network.nix
 # Networking configuration
-{ config, ... }:
-{
+{config, ...}: {
   # Sops secrets
   # Add new secrets to this instead of declaring them further down.
   sops = {
     defaultSopsFile = ./secrets/secrets.yaml;
-    age.keyFile = "/etc/sops/age/keys.txt";
-    secrets."wifi" = { };
+    secrets."wifi" = {};
   };
+
+  # systemd-resolved must be enabled for NetworkManager's "systemd-resolved"
+  # DNS mode below. Required so the PIA VPN CLI's resolvectl-based DNS handling
+  # (system/vpn.nix) coexists with NetworkManager; otherwise the two fight over
+  # /etc/resolv.conf, and when the VPN tunnel dies (e.g. suspend) a stale PIA
+  # nameserver gets left in place, breaking DNS until resolv.conf is regenerated.
+  services.resolved.enable = true;
 
   # Networking settings for wifi
   # Took FOREVER to get this right.
@@ -27,11 +32,7 @@
     networkmanager = {
       enable = true;
       # Push DNS via systemd-resolved instead of letting NetworkManager write
-      # /etc/resolv.conf directly. Required so the PIA VPN CLI's resolvectl-based
-      # DNS handling (system/vpn.nix) coexists with NetworkManager; otherwise the
-      # two fight over resolv.conf, and when the VPN tunnel dies (e.g. suspend)
-      # a stale PIA nameserver gets left in place, breaking DNS until resolv.conf
-      # is regenerated.
+      # /etc/resolv.conf directly.
       dns = "systemd-resolved";
       ensureProfiles = {
         environmentFiles = [
@@ -60,5 +61,5 @@
   };
 
   # NetworkManager group
-  users.groups.networkmanager = { };
+  users.groups.networkmanager = {};
 }

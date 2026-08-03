@@ -1,7 +1,6 @@
 # system/nix-settings.nix
-# Basic nix settings
-{ ... }:
-{
+# Basic nix settings + nixpkgs package policy
+{...}: {
   nix = {
     settings = {
       auto-optimise-store = true;
@@ -30,5 +29,16 @@
       options = "--delete-older-than 3d";
     };
   };
-  system.stateVersion = "25.11";
+
+  # ── Package policy ────────────────────────────────────────────────────────────
+
+  nixpkgs.config = {
+    # Allow unfree packages
+    allowUnfree = true;
+
+    # Allow known insecure packages (EOL Electron required by some apps)
+    permittedInsecurePackages = [
+      "electron-39.8.10"
+    ];
+  };
 }

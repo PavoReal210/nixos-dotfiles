@@ -1,4 +1,4 @@
-# system/power-management.nix
+# system/cpu-performance.nix
 # CPU power management — AMD Ryzen 5800X (Vermeer / Zen 3)
 #
 # Note:
@@ -14,11 +14,7 @@
 #   hardware schedule to the fastest P-cores in a power-aware way.
 # - amd_pstate is in active mode, which lets hardware directly control frequency
 #   from EPP hints for lowest latency.
-{
-  pkgs,
-  ...
-}:
-let
+{pkgs, ...}: let
   # Lock each CPU to EPP=performance and min=max=4600 MHz.
   # Shared between the boot service and the resume hook so both stay in sync.
   cpuPerformanceScript = ''
@@ -37,8 +33,7 @@ let
         echo 4600000 > "$dir/cpufreq/scaling_max_freq" 2>/dev/null || true
     done
   '';
-in
-{
+in {
   imports = [
     ./hardware-configuration.nix
   ];
@@ -64,7 +59,6 @@ in
 
     # Prevent PCIe Active State Power Management from fighting the MT7921e
     # WiFi/BT chip.
-    # (Already in bluetooth.nix — kept here for consolidation.)
     "pcie_aspm=off"
 
     # Disable the legacy ACPI CPU frequency driver so amd-pstate wins cleanly.
@@ -103,8 +97,8 @@ in
   #   instead a full systemd resume hook could be added if needed).
   systemd.services.cpu-performance-epp = {
     description = "Lock CPU to max performance: EPP=performance, freq 4600 MHz";
-    wantedBy = [ "multi-user.target" ];
-    after = [ "sysinit.target" ];
+    wantedBy = ["multi-user.target"];
+    after = ["sysinit.target"];
     restartIfChanged = false;
     serviceConfig = {
       Type = "oneshot";
@@ -117,15 +111,6 @@ in
   # scaling limits across the suspend/resume cycle, leaving the CPU untuned.
   powerManagement.resumeCommands = cpuPerformanceScript;
 
-  # ── ZRAM (compressed RAM swap) ──────────────────────────────────────────────
-  #
-  # Kept because it prevents OOM and doesn't cost significant performance.
-  # L4/L5 cache thrash avoidance may actually improve fps in memory-heavy games.
-  zramSwap = {
-    enable = true;
-    memoryPercent = 50;
-  };
-
   # ── Thermal management ───────────────────────────────────────────────────────
 
   # thermald is NOT used — Intel-centric measure that guesses on AMD.
@@ -134,7 +119,7 @@ in
   # power saving and locked max frequency, this becomes especially important.
   # Ensure there is adequate cooling: the CPU might try to sustain boost clock
   # above its typical thermal envelope.
-  boot.kernelModules = [ "k10temp" ];
+  boot.kernelModules = ["k10temp"];
 
   # ── NVMe power management: DISABLED ─────────────────────────────────────────
   #
@@ -143,20 +128,10 @@ in
   # immediate I/O, at the cost of ~1-2W more at idle.
   # The relevant udev rule is intentionally omitted.
 
-  # ── ananicy-cpp: automatic process nice-level management ────────────────────
-  #
-  # ananicy-cpp runs as a daemon and adjusts process nice levels based on rules.
-  # CachyOS ruleset classifies common foreground, gaming and background tasks.
-  # it measurably improves desktopresponsiveness under load.
-  services.ananicy = {
-    enable = true;
-    package = pkgs.ananicy-cpp;
-    rulesProvider = pkgs.ananicy-rules-cachyos_git;
-  };
-
   # ── Packages ─────────────────────────────────────────────────────────────────
 
   environment.systemPackages = with pkgs; [
+    # cpupower: query/set CPU power and frequency scaling settings
     linuxKernel.packages.linux_zen.cpupower
   ];
 }

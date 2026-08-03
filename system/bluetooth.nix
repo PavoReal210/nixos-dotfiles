@@ -5,8 +5,7 @@
   config,
   lib,
   ...
-}:
-{
+}: {
   # MediaTek (and some Intel/Realtek) Bluetooth chips need firmware blobs
   # from linux-firmware to initialize. Without this the chip will sometimes
   # fails with the message: "Failed to send wmt func ctrl (-22)"
@@ -18,8 +17,7 @@
   # recover from during initialization. Disabling it allows the firmware
   # to load correctly on every boot.
   boot.kernelParams = [
-    "btusb.enable_autosuspend=0" # keep this
-    "pcie_aspm=off" # add this
+    "btusb.enable_autosuspend=0"
   ];
   # Keep this as a belt-and-suspenders fallback
   boot.extraModprobeConfig = ''
