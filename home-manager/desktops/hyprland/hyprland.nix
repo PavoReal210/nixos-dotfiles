@@ -192,7 +192,10 @@ in
         "$modifier SHIFT, e, exec, ${pkgs.thunar}/bin/thunar"
 
         # ── Screenshot (grimshot works on Hyprland) ──
-        "$modifier SHIFT, s, exec, ${pkgs.sway-contrib.grimshot}/bin/grimshot copy area"
+        # Print Screen — save full screen to ~/Pictures/Screenshots
+        ", Print, exec, shot-full"
+        # Super+Shift+S — save area selection to ~/Pictures/Screenshots and copy to clipboard
+        "$modifier SHIFT, s, exec, shot-area"
 
         # ── Clipboard History ──
         "$modifier SHIFT, v, exec, cliphist list | ${pkgs.bemenu}/bin/bemenu -l 20 | cliphist decode | wl-copy"

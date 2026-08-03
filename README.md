@@ -33,6 +33,15 @@ This flake manages:
 
 Notifications: Dunst, Terminal: Ghostty/Kitty, Browser: Floorp, Editor: Doom Emacs + VSCode, Mail: Thunderbird, Spaced Rep: Anki, networkmanager-applet, blueman-applet, Maestral (Dropbox), PIA VPN.
 
+### Screenshots
+
+Screenshots use Grimshot through two scripts defined in `home-manager/desktops/utilities/screenshot.nix`:
+
+| Action | Keybinding | Behavior |
+|--------|-----------|----------|
+| Full screen | `Print` | Saves to `~/Pictures/Screenshots/<timestamp>.png` |
+| Area | `Super + Shift + S` | Saves to `~/Pictures/Screenshots/<timestamp>.png` and copies to clipboard |
+
 ## Quick Start
 
 ```bash
@@ -96,7 +105,8 @@ nixos-dotfiles/
 │       │   └── hypridle.nix        # Idle management (lock, dpms, suspend)
 │       └── utilities/
 │           ├── bar/waybar.nix      # Waybar + custom modules
-│           └── bemenu/             # Launcher, powermenu, VPN selector
+│           ├── bemenu/             # Launcher, powermenu, VPN selector
+│           └── screenshot.nix      # Grimshot scripts (shot-full, shot-area)
 └── docs/                           # Documentation
     ├── devshells.md                # Development shell usage
     ├── secrets.md                  # SOPS secrets setup
