@@ -90,7 +90,7 @@ nixos-dotfiles/
 │   │   ├── development-tools.nix   # Rust, Python, C/C++, Nix, LaTeX
 │   │   ├── devshells/              # Pinned dev environments (c-dev, py-dev, rs-dev)
 │   │   ├── doom.nix                # Doom Emacs (nix-doom-emacs-unstraightened)
-│   │   ├── gaming.nix              # goverlay, RetroArch + RetroAchievements, BIOS seeding
+│   │   ├── retroarch.nix            # RetroArch + RetroAchievements, BIOS seeding
 │   │   ├── firefox.nix             # Firefox with GPU accel
 │   │   ├── ghostty.nix             # Ghostty terminal (Stylix)
 │   │   ├── kitty.nix               # Kitty terminal (Stylix)
@@ -161,7 +161,7 @@ The configuration includes a dedicated gaming module (`system/gaming.nix`) with:
 - **Gamemode**: Feral Interactive's automatic CPU/IO performance optimizer
 - **Lutris + Heroic**: Game launchers for non-Steam games
 - **Steam**: Full Steam integration with Proton support
-- **Goverlay**: GUI for MangoHud (user-level)
+- **Goverlay**: GUI for MangoHud (user-level, in `home-manager/utilities/common-packages.nix`)
 
 ### Kernel Optimizations
 
@@ -179,7 +179,7 @@ The RTX 4060 uses proprietary NVIDIA modules with:
 
 ### RetroArch
 
-RetroArch is built from `retroarch-bare` (nixpkgs has no `programs.retroarch` module) and configured in `home-manager/utilities/gaming.nix`.
+RetroArch is built from `retroarch-bare` (nixpkgs has no `programs.retroarch` module) and configured in `home-manager/utilities/retroarch.nix`.
 
 - **Cores**: NES (`mesen`), SNES (`bsnes-hd` + `snes9x`), N64 (`mupen64plus`), PS1 (`beetle-psx-hw`), PS2 (`pcsx2`), GameCube/Wii (`dolphin`), GBA (`mgba`), Dreamcast (`flycast`), Sega Saturn (`beetle-saturn`)
 - **Video**: Vulkan on the RTX 4060, fullscreen, nearest-neighbour scaling, vsync on

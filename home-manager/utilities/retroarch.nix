@@ -1,5 +1,5 @@
-# home-manager/utilities/gaming.nix
-# User-level gaming packages and configuration
+# home-manager/utilities/retroarch.nix
+# RetroArch retro game emulation + RetroAchievements
 {
   config,
   lib,
@@ -7,8 +7,6 @@
   ...
 }: {
   home.packages = with pkgs; [
-    goverlay # GUI for MangoHud
-
     # RetroArch — retro game emulation.
     # nixpkgs has no `programs.retroarch` module, so we wrap `retroarch-bare`.
     # `cores` bundles the libretro cores into the wrapper. All configuration is

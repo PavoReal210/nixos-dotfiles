@@ -11,10 +11,9 @@
     ./development-tools.nix
     ./doom.nix
     ./floorp.nix
-    ./gaming.nix
+    ./retroarch.nix
     ./ghostty.nix
     ./kitty.nix
-    ./p10k.nix
     ./thunderbird.nix
     ./ssh.nix
     ./vscode.nix

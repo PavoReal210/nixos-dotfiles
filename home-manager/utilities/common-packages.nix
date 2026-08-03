@@ -14,6 +14,7 @@
     atril # PDF reader
     picard # Music metadata editor
     prismlauncher # Minecraft launcher
+    goverlay # GUI for MangoHud
     vlc # Media player
     strawberry # Music player
     qbittorrent # Torrent client
