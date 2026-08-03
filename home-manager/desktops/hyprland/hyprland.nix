@@ -377,6 +377,14 @@ in
         float = true
       }
 
+      # File Roller — float the archive manager so it opens as a normal window
+      # instead of being tiled.
+      windowrule {
+        name = file-roller-float
+        match:class = ^(org\\.gnome\\.FileRoller)$
+        float = true
+      }
+
       # RetroArch — float it so the window is freely resizable and the tiling
       # layout rules don't apply to it.
       windowrule {

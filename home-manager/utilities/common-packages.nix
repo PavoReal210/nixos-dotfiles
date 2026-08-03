@@ -64,6 +64,11 @@
     hyprpolkitagent # Polkit auth agent (lets pkexec apps like gparted prompt for password)
   ];
 
+  # Default file manager for directories (xdg-open): Thunar is enabled
+  # system-wide in system/default-desktop.nix via programs.thunar.
+  xdg.mimeApps.enable = true;
+  xdg.mimeApps.defaultApplications."inode/directory" = [ "thunar.desktop" ];
+
   # Menu entry for the wrapped gparted — the stock .desktop calls the store
   # path directly, bypassing the wrapper above.
   xdg.desktopEntries.gparted = {
