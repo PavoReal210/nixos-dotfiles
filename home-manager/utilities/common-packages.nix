@@ -65,7 +65,7 @@
   ];
 
   # Default file manager for directories (xdg-open): Thunar is enabled
-  # system-wide in system/default-desktop.nix via programs.thunar.
+  # system-wide in system/file-management.nix via programs.thunar.
   xdg.mimeApps.enable = true;
   xdg.mimeApps.defaultApplications."inode/directory" = [ "thunar.desktop" ];
 

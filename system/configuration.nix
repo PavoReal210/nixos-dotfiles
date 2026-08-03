@@ -11,6 +11,8 @@
     ./boot.nix
     ./default-desktop.nix
     ./desktop-manager.nix
+    ./file-management.nix
+    ./filesystem.nix
     ./fonts.nix
     ./gaming.nix
     ./hardware-configuration.nix

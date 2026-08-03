@@ -1,3 +1,6 @@
+# system/default-desktop.nix
+# Hyprland desktop: compositor, XDG portals, cursor, Wayland env vars
+# (file management lives in file-management.nix, BTRFS options in filesystem.nix)
 {
   lib,
   pkgs,
@@ -30,66 +33,6 @@
       common.default = [ "gtk" ];
     };
   };
-
-  # ── File manager (Thunar) ────────────────────────────────────────────────────
-
-  services.gvfs.enable = true;
-  services.udisks2.enable = true;
-  services.tumbler.enable = true;
-
-  programs.thunar = {
-    enable = true;
-    plugins = with pkgs; [
-      thunar-archive-plugin
-      thunar-vcs-plugin
-      thunar-dropbox-plugin
-      thunar-media-tags-plugin
-      thunar-volman
-    ];
-  };
-
-  # Archive right-click support: thunar-archive-plugin adds "Extract Here" /
-  # "Extract To..." to the context menu; file-roller is the GUI backend that
-  # performs the extraction. unrar + unar cover .rar (incl. RAR5) and other
-  # formats that file-roller shells out to.
-  environment.systemPackages = with pkgs; [
-    file-roller
-    unrar
-    unar
-  ];
-
-  programs.xfconf.enable = true;
-
-  environment.etc."udisks2/mount_options.conf".text = ''
-    [defaults]
-    ntfs_defaults=uid=$UID,gid=$GID
-  '';
-
-  # ── Filesystem performance ───────────────────────────────────────────────────
-  #
-  # BTRFS optimizations for SSD + desktop workload:
-  #   compress=zstd — reduces disk I/O by compressing data in RAM before writing;
-  #                   zstd offers the best ratio/speed tradeoff and is built into
-  #                   the kernel. Reads are decompressed on the fly, which is fast
-  #                   on modern CPUs and effectively increases SSD read throughput.
-  #   noatime       — skips writing access-time metadata on every file read,
-  #                   eliminating a huge source of small random writes.
-  #   ssd           — tells BTRFS the device is an SSD, enabling TRIM/discard
-  #                   and disabling page-cache alignment hacks meant for HDDs.
-  #   discard=async — queues TRIM commands asynchronously so they don't block
-  #                   the submitting thread; the kernel batches them via kworker.
-  fileSystems."/".options = lib.mkAfter [
-    "compress=zstd"
-    "noatime"
-    "ssd"
-    "discard=async"
-  ];
-  fileSystems."/home".options = lib.mkAfter [
-    "compress=zstd"
-    "noatime"
-    "ssd"
-    "discard=async"
-  ];
 
   # ── Cursor ───────────────────────────────────────────────────────────────────
 

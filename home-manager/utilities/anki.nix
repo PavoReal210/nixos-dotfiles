@@ -24,12 +24,29 @@ let
       rm -f tinycss/speedups.so
     '';
   };
+
+  # "Anki Markdown" (ankiweb id 1172202975), pinned from the ankiweb download
+  # endpoint. Requires Anki 25.x+. Renders Markdown fields with syntax
+  # highlighting powered by Shiki. The zip ships no platform binaries, so no
+  # unpack cleanup is needed.
+  anki-markdown = pkgs.anki-utils.buildAnkiAddon {
+    pname = "anki-markdown";
+    version = "1.4.4";
+    src = pkgs.fetchurl {
+      url = "https://ankiweb.net/shared/download/1172202975?v=2.1&p=1172202975";
+      hash = "sha256-jahbgsGESVZelLvls4WDzi66IoBsIALntxH6O0p5AEY=";
+    };
+    nativeBuildInputs = [ pkgs.unzip ];
+    unpackPhase = ''
+      unzip $src -d .
+    '';
+  };
 in
 {
   programs.anki = {
     enable = true;
     package = pkgs.anki;
-    addons = [ multi-line-type-answer-box ];
+    addons = [ multi-line-type-answer-box anki-markdown ];
     profiles."User 1".sync = {
       usernameFile = config.sops.secrets.anki-username.path;
       keyFile = config.sops.secrets.anki-sync-key.path;

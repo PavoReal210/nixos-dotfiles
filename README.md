@@ -72,6 +72,8 @@ nixos-dotfiles/
 │   ├── bluetooth.nix               # Bluetooth + MT7921 fixes
 │   ├── default-desktop.nix         # Hyprland, XDG portals, Wayland env vars
 │   ├── desktop-manager.nix         # SDDM (Rose Pine) with stylix wallpaper
+│   ├── file-management.nix         # Thunar file manager + archive support
+│   ├── filesystem.nix              # BTRFS mount options (zstd, noatime, ssd, discard)
 │   ├── fonts.nix                   # Nerd Fonts, Noto, Weather Icons (single source of truth)
 │   ├── locale.nix                  # Locale + timezone
 │   ├── network.nix                 # NetworkManager + SOPS WiFi
