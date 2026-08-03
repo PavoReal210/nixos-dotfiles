@@ -12,6 +12,9 @@
 
   programs.steam = {
     enable = true;
+    package = pkgs.steam.override {
+      extraEnv = { STEAM_FORCE_DESKTOPUI_SCALING = "1.6"; };
+    };
     gamescopeSession.enable = true;
     protontricks.enable = true;
     extraPackages = with pkgs; [

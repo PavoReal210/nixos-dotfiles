@@ -44,6 +44,10 @@ in
       # EDIT: Change "1.6" to adjust scaling. Use "1" for no scaling.
       monitor = ", preferred, auto, 1.6";
 
+      xwayland = {
+        force_zero_scaling = true;
+      };
+
       # ── General ────────────────────────────────────────────────────────────
       # Core compositor settings: gaps, borders, layout, focus behavior.
       # EDIT: Change gaps_in/gaps_out for spacing, border_size for window borders.
