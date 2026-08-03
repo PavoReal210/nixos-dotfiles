@@ -216,7 +216,7 @@ in
         # ── Custom App Launchers (Emacs, Anki, Emoji) ──
         "CTRL ALT, z, exec, emacsclient -c -a emacs"
         "CTRL ALT, e, exec, bemoji"
-        "CTRL ALT, a, exec, ${pkgs.anki-bin}/bin/anki"
+        "CTRL ALT, a, exec, ${config.programs.anki.package}/bin/anki"
 
         # ── Workspace Switching ──
         "$modifier, 1, workspace, 1"

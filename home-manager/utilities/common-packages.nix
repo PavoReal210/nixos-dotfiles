@@ -8,7 +8,6 @@
   home.packages = with pkgs; [
     # GUI Applications
     (pidgin.override { plugins = [ pidginPackages.purple-discord ]; }) # Discord via Pidgin (no Electron)
-    anki-bin # Flashcards
     gimp # Image editing
     krita # Digital painting
     libreoffice-qt6 # Office suite
@@ -78,6 +77,10 @@
     exec = "gparted %f";
     icon = "${pkgs.gparted}/share/icons/hicolor/48x48/apps/gparted.png";
     terminal = false;
-    categories = [ "GNOME" "System" "Filesystem" ];
+    categories = [
+      "GNOME"
+      "System"
+      "Filesystem"
+    ];
   };
 }

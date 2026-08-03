@@ -3,6 +3,7 @@
 { ... }:
 {
   imports = [
+    ./anki.nix
     ./dunst.nix
     ./borg-backup.nix
     ./common-packages.nix
