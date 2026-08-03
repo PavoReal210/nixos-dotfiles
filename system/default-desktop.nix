@@ -12,8 +12,8 @@
     xwayland.enable = true;
   };
 
-  # NOTE: defaultSession is intentionally removed so SDDM remembers
-  # whichever session you last selected.
+  # NOTE: defaultSession is intentionally removed so the display manager
+  # remembers whichever session you last selected.
 
   # ── XDG desktop portal ───────────────────────────────────────────────────────
 

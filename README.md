@@ -25,6 +25,7 @@ This flake manages:
 | Launcher | Bemenu |
 | Lockscreen | Hyprlock |
 | Idle | Hypridle |
+| Login / Greeter | greetd + ReGreet (Stylix-themed) |
 | Wallpaper | stylix |
 | Screenshot | Grimshot |
 | Clipboard | Cliphist + wl-clipboard |
@@ -53,8 +54,8 @@ nh os switch
 # Or manually
 sudo nixos-rebuild switch --flake .#railgun
 
-# Switch home-manager
-home-manager switch --flake .#railgun-linux-desktop
+# Home Manager is integrated into the NixOS activation above; no separate
+# Home Manager activation command is required.
 ```
 
 ## Structure
@@ -71,7 +72,8 @@ nixos-dotfiles/
 │   ├── audio.nix                   # PipeWire + pamixer, pavucontrol, playerctl
 │   ├── bluetooth.nix               # Bluetooth + MT7921 fixes
 │   ├── default-desktop.nix         # Hyprland, XDG portals, Wayland env vars
-│   ├── desktop-manager.nix         # SDDM (Rose Pine) with stylix wallpaper
+│   ├── desktop-manager.nix         # greetd + ReGreet (Stylix-themed login)
+│   ├── stylix.nix                  # System-level Stylix (themes the ReGreet greeter)
 │   ├── file-management.nix         # Thunar file manager + archive support
 │   ├── filesystem.nix              # BTRFS mount options (zstd, noatime, ssd, discard)
 │   ├── fonts.nix                   # Nerd Fonts, Noto, Weather Icons (single source of truth)
@@ -88,8 +90,8 @@ nixos-dotfiles/
 │   ├── secrets.nix                 # SOPS age keyfile + permissions
 │   ├── vpn.nix                     # PIA VPN (WireGuard) + SOPS
 │   └── secrets/                    # Encrypted SOPS secrets (age)
-├── home-manager/                   # User-level config (home-manager)
-│   ├── home.nix                    # Main entry + session vars
+├── home-manager/                   # User-level config, activated by NixOS
+│   ├── home.nix                    # Main module + session vars
 │   ├── theming/                    # Stylix, fonts, fastfetch
 │   │   ├── stylix.nix             # Stylix configuration
 │   ├── utilities/                  # Apps and tools
@@ -147,15 +149,19 @@ A minimal Neovim installation (no plugins) is available for quick terminal edits
 Colors are managed via Stylix, which generates a base16 palette from the current wallpaper:
 
 ```nix
-stylix.image = ../wallpapers/still_wallpapers/wallhaven-zpxjjo.jpg;
-# base16Scheme is intentionally left unset so Stylix generates from wallpaper
+# system/stylix.nix declares the wallpaper once:
+stylix.image = ../home-manager/wallpapers/still_wallpapers/wallhaven-zpxjjo.jpg;
+
+# home-manager/theming/stylix.nix inherits it from NixOS:
+image = osConfig.stylix.image;
+# base16Scheme is intentionally left unset so Stylix generates from the wallpaper
 ```
 
 Colors are applied to:
 - Hyprland, Waybar, Bemenu, Hyprlock
 - GTK, Qt, Ghostty, Kitty, Firefox, VSCode, Anki
 
-The same Stylix wallpaper is used by Hyprlock and the SDDM login screen, so the desktop, lockscreen, and login screen all match.
+The same Stylix wallpaper is used by Hyprlock and the ReGreet login screen (greetd), so the desktop, lockscreen, and login screen all match. The wallpaper path is declared once in `system/stylix.nix`; integrated Home Manager Stylix inherits it from the surrounding NixOS configuration through `osConfig.stylix.image`.
 
 GTK widgets are themed by Stylix's built-in GTK target (no custom theme derivation). The icon theme is set separately in `theming/stylix.nix`.
 
@@ -208,7 +214,7 @@ Suspend/resume is hardened against the classic NVIDIA + Wayland "dies on wake" h
 
 Locking:
 - `Super + X` locks immediately (Hyprlock). The power menu (`Super + Shift + X`) offers Lock / Suspend / Restart / Shutdown / Logout.
-- Hyprlock and the SDDM login screen both use the Stylix wallpaper, so lockscreen, login screen, and desktop all match.
+- Hyprlock and the ReGreet login screen (greetd) both use the Stylix wallpaper, so lockscreen, login screen, and desktop all match.
 
 ## Rebuilding
 
@@ -218,8 +224,10 @@ nh os switch
 
 # Or manually
 sudo nixos-rebuild switch --flake .#railgun
-home-manager switch --flake .#railgun-linux-desktop
 ```
+
+Home Manager is configured as a NixOS module for `railgun`. The commands above
+rebuild and activate the system and the user environment together.
 
 ## Secrets
 

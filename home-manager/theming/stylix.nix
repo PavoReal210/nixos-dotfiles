@@ -1,16 +1,17 @@
 {
   pkgs,
+  osConfig,
   ...
-}:
-{
+}: {
   config = {
     stylix = {
       enable = true;
 
-      # Use a wallpaper from still_wallpapers to auto-generate a base16 color scheme.
+      # Home Manager is integrated into NixOS, so inherit the system Stylix
+      # wallpaper instead of declaring a second path here.
       # The color scheme is generated via a genetic algorithm from the wallpaper image.
       # Mustache templates can also be used to generate custom theme files — see base16.nix docs.
-      image = ../wallpapers/still_wallpapers/wallhaven-zpxjjo.jpg;
+      image = osConfig.stylix.image;
       # values: "center", "stretch", "fill", "fit", "tile"
       imageScalingMode = "fit";
 

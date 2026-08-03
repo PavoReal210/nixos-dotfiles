@@ -22,6 +22,7 @@
     ./nvidia.nix
     ./scheduler.nix
     ./secrets.nix
+    ./stylix.nix
     ./suspend.nix
     ./users.nix
     ./vpn.nix

@@ -14,7 +14,7 @@ For Neovim editor integration, see [neovim-dotfiles/README.md](../neovim-dotfile
 
 ## 1. Usage
 
-After running `home-manager switch`, these commands are available in your PATH:
+After running a NixOS switch, these commands are available in your PATH:
 
 | Command   | DevShell   | Tools                                              |
 | --------- | ---------- | -------------------------------------------------- |
@@ -115,13 +115,13 @@ Now every time you `cd` into the project, the devShell loads automatically.
 The dev shell scripts are installed by home-manager. Make sure you've run:
 
 ```bash
-home-manager switch --flake ~/GitRepos/nixos-dotfiles#railgun-linux-desktop
+sudo nixos-rebuild switch --flake ~/GitRepos/nixos-dotfiles#railgun
 ```
 
 ### "cannot find path to derivation"
 
 The derivation reference in the wrapper script points to a store path. If it
-was garbage-collected, just re-run `home-manager switch` to rebuild it.
+was garbage-collected, just re-run the NixOS switch to rebuild it.
 
 ### Dev shell feels slow to start
 
@@ -138,7 +138,7 @@ Edit the relevant file in `home-manager/devshells/`, add the package to the
 `packages` list inside `pkgs.mkShell`, then run:
 
 ```bash
-home-manager switch --flake ~/GitRepos/nixos-dotfiles#railgun-linux-desktop
+sudo nixos-rebuild switch --flake ~/GitRepos/nixos-dotfiles#railgun
 ```
 
 ---
@@ -152,8 +152,8 @@ The devShell packages come from `nixpkgs`, which is pinned by the flake's
 # Update ALL inputs (nixpkgs and everything else)
 nix flake update ~/GitRepos/nixos-dotfiles
 
-# After updating, rebuild home-manager to apply new package versions
-home-manager switch --flake ~/GitRepos/nixos-dotfiles#railgun-linux-desktop
+# After updating, rebuild the system to apply new package versions
+sudo nixos-rebuild switch --flake ~/GitRepos/nixos-dotfiles#railgun
 ```
 
 Or use your existing `update` alias which does the full rebuild chain:
@@ -166,7 +166,7 @@ To add a new tool to an existing devShell:
 
 1. Edit the module in `home-manager/devshells/` (e.g. `c-general-devshell.nix`)
 2. Add the package to the `packages` list inside `pkgs.mkShell`
-3. Run `home-manager switch` to install the updated script
+3. Run `sudo nixos-rebuild switch --flake ~/GitRepos/nixos-dotfiles#railgun` to install the updated script
 
 ---
 

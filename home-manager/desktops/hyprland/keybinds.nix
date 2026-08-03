@@ -84,7 +84,8 @@ in {
       # ── Reload & Restart ──
       # Reload: hyprctl reload
       "$modifier SHIFT, c, exec, hyprctl reload"
-      # Restart: Hyprland has no restart command — exit and let SDDM relaunch
+      # Restart: Hyprland has no restart command — exit and let greetd relaunch
+      # (back to the ReGreet login screen)
       "$modifier SHIFT, r, exec, hyprctl dispatch exit"
 
       # ── Custom App Launchers (Emacs, Anki, Emoji) ──

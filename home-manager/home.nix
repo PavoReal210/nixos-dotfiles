@@ -1,29 +1,22 @@
 # home-manager/home.nix
-# Main home-manager configuration
+# Main Home Manager configuration.
+# This module is imported by the NixOS Home Manager module, so it is rebuilt and
+# activated automatically as part of `nixos-rebuild switch`. Its `osConfig`
+# argument exposes the surrounding NixOS configuration to Home Manager modules.
 {
   config,
   inputs,
   ...
-}:
-
-{
+}: {
   imports = [
-    inputs.stylix.homeModules.stylix
+    # The system Stylix module supplies Stylix's Home Manager module through
+    # the integrated NixOS/Home Manager configuration in flake.nix.
     ./theming # This has to get loaded first
     ./utilities
     ./desktops
   ];
 
   config = {
-    # Allow unfree packages
-    nixpkgs.config = {
-      allowUnfree = true;
-      allowUnfreePredicate = _: true;
-      permittedInsecurePackages = [
-        "electron-39.8.10"
-      ];
-    };
-
     # User information
     home = {
       username = "railgun";
@@ -48,7 +41,8 @@
       };
     };
 
-    # Enable home-manager
+    # Keep the Home Manager command available inside the managed user profile.
+    # The configuration itself is activated by the surrounding NixOS switch.
     programs.home-manager.enable = true;
 
     # Vanilla neovim (no plugins, for quick terminal edits)
@@ -58,7 +52,7 @@
       withPython3 = false;
     };
 
-    # Systemd user services
+    # Start/restart user services when the integrated Home Manager activation runs.
     systemd.user.startServices = "sd-switch";
 
     # State version - do not change after initial setup
