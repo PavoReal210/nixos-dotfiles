@@ -10,7 +10,7 @@
       # Use a wallpaper from still_wallpapers to auto-generate a base16 color scheme.
       # The color scheme is generated via a genetic algorithm from the wallpaper image.
       # Mustache templates can also be used to generate custom theme files — see base16.nix docs.
-      image = ../wallpapers/still_wallpapers/wallhaven-3q3z9d.jpg;
+      image = ../wallpapers/still_wallpapers/wallhaven-zpxjjo.jpg;
       # values: "center", "stretch", "fill", "fit", "tile"
       imageScalingMode = "fit";
 
