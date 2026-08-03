@@ -42,6 +42,8 @@ Screenshots use Grimshot through two scripts defined in `home-manager/desktops/u
 | Full screen | `Print` | Saves to `~/Pictures/Screenshots/<timestamp>.png` |
 | Area | `Super + Shift + S` | Saves to `~/Pictures/Screenshots/<timestamp>.png` and copies to clipboard |
 
+Each script sends a Dunst notification on completion — normal urgency with the saved path on success, critical urgency on failure.
+
 ## Quick Start
 
 ```bash

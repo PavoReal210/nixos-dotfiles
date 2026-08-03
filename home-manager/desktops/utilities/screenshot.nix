@@ -9,15 +9,22 @@ let
 
   shot-full = pkgs.writeShellScriptBin "shot-full" ''
     mkdir -p ${shotDir}
-    ${grimshot} save screen "${shotDir}/${timestamp}.png"
+    file="${shotDir}/${timestamp}.png"
+    if ${grimshot} save screen "$file"; then
+      notify-send "Screenshot" "Saved: $file"
+    else
+      notify-send -u critical "Screenshot" "Failed: $file"
+    fi
   '';
 
   shot-area = pkgs.writeShellScriptBin "shot-area" ''
     mkdir -p ${shotDir}
     file="${shotDir}/${timestamp}.png"
-    ${grimshot} save area "$file"
-    if [ -f "$file" ]; then
+    if ${grimshot} save area "$file" && [ -f "$file" ]; then
       ${pkgs.wl-clipboard}/bin/wl-copy < "$file"
+      notify-send "Screenshot" "Saved: $file"
+    else
+      notify-send -u critical "Screenshot" "Failed: $file"
     fi
   '';
 in
