@@ -4,7 +4,7 @@
 }:
 let
   powerMenuScript = pkgs.writeShellScriptBin "powermenu-bemenu" ''
-    chosen=$(printf '⏻ Shutdown\n⏼ Restart\n󰤄 Suspend\n Lock\n󰍃 Logout' \
+    chosen=$(printf '⏻ Shutdown\n⏼ Restart\n󰤄 Suspend\n Lock\n󰍃 Logout' \
       | ${pkgs.bemenu}/bin/bemenu -p "Power" -l 5)
 
     case "$chosen" in

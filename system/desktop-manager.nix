@@ -27,7 +27,7 @@ let
 
              mkdir -p "$THEME_DIR/backgrounds"
              cp \
-               "${../home-manager/wallpapers/still_wallpapers/bveqqcq4fo5h1.jpeg}" \
+               "${../home-manager/wallpapers/still_wallpapers/wallhaven-zpxjjo.jpg}" \
                "$THEME_DIR/backgrounds/default.png"
 
             #

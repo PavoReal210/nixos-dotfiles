@@ -19,6 +19,7 @@
     ./nix-settings.nix
     ./nvidia.nix
     ./power-management.nix
+    ./suspend.nix
     ./users.nix
     ./vpn.nix
   ];

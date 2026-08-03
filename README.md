@@ -71,12 +71,13 @@ nixos-dotfiles/
 │   ├── audio.nix                   # PipeWire + pamixer, pavucontrol, playerctl
 │   ├── bluetooth.nix               # Bluetooth + MT7921 fixes
 │   ├── default-desktop.nix         # Hyprland, XDG portals, Wayland env vars
-│   ├── desktop-manager.nix         # SDDM with Rose Pine theme
+│   ├── desktop-manager.nix         # SDDM (Rose Pine) with stylix wallpaper
 │   ├── fonts.nix                   # Nerd Fonts, Noto, Weather Icons (single source of truth)
 │   ├── locale.nix                  # Locale + timezone
 │   ├── network.nix                 # NetworkManager + SOPS WiFi
 │   ├── nix-settings.nix            # Flakes, garbage collection, store optimization, Cachix
-│   ├── power-management.nix        # amd_pstate=active, EPP, ZRAM, ananicy-cpp
+│   ├── power-management.nix        # amd_pstate=active, EPP, ZRAM, ananicy-cpp + resume hook
+│   ├── suspend.nix                 # NVIDIA/Hyprland + scx suspend-resume robustness
 │   ├── users.nix                   # User account + zsh
 │   ├── vpn.nix                     # PIA VPN (WireGuard) + SOPS
 │   └── secrets/                    # Encrypted SOPS secrets (age)
@@ -103,7 +104,7 @@ nixos-dotfiles/
 │       ├── common-packages.nix     # Shared compositor packages (grimshot, cliphist, etc.)
 │       ├── hyprland/
 │       │   ├── hyprland.nix        # Full Hyprland config + keybindings
-│       │   ├── hyprlock.nix        # Hyprlock lockscreen with stylix colors
+│       │   ├── hyprlock.nix        # Hyprlock lockscreen (stylix wallpaper + colors)
 │       │   └── hypridle.nix        # Idle management (lock, dpms, suspend)
 │       └── utilities/
 │           ├── bar/waybar.nix      # Waybar + custom modules
@@ -136,13 +137,15 @@ A minimal Neovim installation (no plugins) is available for quick terminal edits
 Colors are managed via Stylix, which generates a base16 palette from the current wallpaper:
 
 ```nix
-stylix.image = ../wallpapers/still_wallpapers/wallhaven-1p5z29.jpg;
+stylix.image = ../wallpapers/still_wallpapers/wallhaven-zpxjjo.jpg;
 # base16Scheme is intentionally left unset so Stylix generates from wallpaper
 ```
 
 Colors are applied to:
 - Hyprland, Waybar, Bemenu, Hyprlock
 - GTK, Qt, Ghostty, Kitty, Firefox, VSCode, Anki
+
+The same Stylix wallpaper is used by Hyprlock and the SDDM login screen, so the desktop, lockscreen, and login screen all match.
 
 GTK widgets are themed by Stylix's built-in GTK target (no custom theme derivation). The icon theme is set separately in `theming/stylix.nix`.
 
@@ -183,6 +186,19 @@ RetroArch is built from `retroarch-bare` (nixpkgs has no `programs.retroarch` mo
 - **Upscaling**: seeded into `retroarch-core-options.cfg` on first run (only if the file is absent) — 4x internal resolution on PS1/PS2/GameCube, 6x Saturn, 1440x1440 Dreamcast, HD supersampling on SNES
 - **BIOS**: the ~8 MB of BIOS/system files actually required (PS1, PS2, Dreamcast, Saturn) are downloaded into `~/Emulation/bios` from [Abdess/retrobios](https://github.com/Abdess/retrobios) (pinned to a commit) only if missing, placed in the layout RetroArch cores expect. NES/SNES/N64/GBA/GC need no BIOS.
 - **RetroAchievements**: enabled globally (hardcore mode off, so rewind/savestates stay usable). Credentials are stored in sops (`retroachievements-username`/`retroachievements-password` in `system/secrets/secrets.yaml`) and seeded into RetroArch's config at activation, so they never land in the nix store.
+
+## Suspend & Power
+
+Suspend/resume is hardened against the classic NVIDIA + Wayland "dies on wake" hang (`system/suspend.nix`):
+
+- **Hyprland is frozen during suspend** — `hyprland-suspend.service` SIGSTOPs the compositor before the GPU is suspended and `hyprland-resume.service` SIGCONTs it after wake, so it never races the GPU disappearing/reappearing.
+- **sched-ext scheduler is cycled** — `scx-suspend.service`/`scx-resume.service` unload `scx_rustland` before sleep and reload it after wake (userspace schedulers can wedge on CPU hotplug across resume).
+- **CPU performance settings re-applied on resume** — `powerManagement.resumeCommands` re-locks EPP and the 4600 MHz scaling limits after wake (`system/power-management.nix`).
+- **Displays re-enable cleanly** — hypridle waits 1s after resume before turning DPMS back on.
+
+Locking:
+- `Super + X` locks immediately (Hyprlock). The power menu (`Super + Shift + X`) offers Lock / Suspend / Restart / Shutdown / Logout.
+- Hyprlock and the SDDM login screen both use the Stylix wallpaper, so lockscreen, login screen, and desktop all match.
 
 ## Rebuilding
 

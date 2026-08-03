@@ -18,6 +18,26 @@
   pkgs,
   ...
 }:
+let
+  # Lock each CPU to EPP=performance and min=max=4600 MHz.
+  # Shared between the boot service and the resume hook so both stay in sync.
+  cpuPerformanceScript = ''
+    # Set EPP to performance on every CPU policy
+    for policy in /sys/devices/system/cpu/cpufreq/policy*; do
+      [ -e "$policy/energy_performance_preference" ] && \
+        echo performance > "$policy/energy_performance_preference"
+    done
+
+    # Lock min and max frequency to the maximum boost clock (4600 MHz)
+    for cpu in /sys/devices/system/cpu/cpu*/online; do
+      dir="$(dirname "$cpu")"
+      [ -e "$dir/cpufreq/scaling_min_freq" ] && \
+        echo 4600000 > "$dir/cpufreq/scaling_min_freq" 2>/dev/null || true
+      [ -e "$dir/cpufreq/scaling_max_freq" ] && \
+        echo 4600000 > "$dir/cpufreq/scaling_max_freq" 2>/dev/null || true
+    done
+  '';
+in
 {
   imports = [
     ./hardware-configuration.nix
@@ -90,23 +110,12 @@
       Type = "oneshot";
       RemainAfterExit = true;
     };
-    script = ''
-      # Set EPP to performance on every CPU policy
-      for policy in /sys/devices/system/cpu/cpufreq/policy*; do
-        [ -e "$policy/energy_performance_preference" ] && \
-          echo performance > "$policy/energy_performance_preference"
-      done
-
-      # Lock min and max frequency to the maximum boost clock (4600 MHz)
-      for cpu in /sys/devices/system/cpu/cpu*/online; do
-        dir="$(dirname "$cpu")"
-        [ -e "$dir/cpufreq/scaling_min_freq" ] && \
-          echo 4600000 > "$dir/cpufreq/scaling_min_freq" 2>/dev/null || true
-        [ -e "$dir/cpufreq/scaling_max_freq" ] && \
-          echo 4600000 > "$dir/cpufreq/scaling_max_freq" 2>/dev/null || true
-      done
-    '';
+    script = cpuPerformanceScript;
   };
+
+  # Re-apply EPP and the frequency lock after resume: amd_pstate can reset the
+  # scaling limits across the suspend/resume cycle, leaving the CPU untuned.
+  powerManagement.resumeCommands = cpuPerformanceScript;
 
   # ── ZRAM (compressed RAM swap) ──────────────────────────────────────────────
   #

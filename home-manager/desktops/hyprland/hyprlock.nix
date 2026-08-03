@@ -14,10 +14,11 @@ in
 
   xdg.configFile."hypr/hyprlock.conf".text = ''
     # ── Background ─────────────────────────────────────────────────────────
-    # Lockscreen wallpaper. blur_passes = 3 makes the background blurry.
+    # Uses the same wallpaper as the desktop (stylix.image). blur_passes = 3
+    # makes the background blurry.
     background {
       monitor =
-      path = ~/Wallpapers/lockscreen_wallpapers/lock.jpeg
+      path = ${config.stylix.image}
       blur_passes = 3
       blur_size = 7
     }
