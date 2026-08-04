@@ -20,6 +20,7 @@
     ./network.nix
     ./nix-settings.nix
     ./nvidia.nix
+    ./printing.nix
     ./scheduler.nix
     ./secrets.nix
     ./stylix.nix

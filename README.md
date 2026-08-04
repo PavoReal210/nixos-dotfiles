@@ -58,6 +58,23 @@ sudo nixos-rebuild switch --flake .#railgun
 # Home Manager activation command is required.
 ```
 
+## Printing
+
+Wi-Fi printing is configured in `system/printing.nix` using CUPS, Avahi/mDNS,
+driverless IPP discovery, and HPLIP for the HP printers used by this system.
+HPLIP is not required for non-HP printers unless their model needs it.
+
+After rebuilding with `nh os switch`, use one of these tools to add the printer:
+
+- `system-config-printer` for the graphical setup tool
+- `http://localhost:631` for the CUPS web interface
+- `lpinfo -v` to inspect discovered printer backends
+- `lpstat -p` to list configured printers
+
+The configuration intentionally does not hard-code a printer IP address. If a
+printer needs a persistent declarative entry, add its stable IPP URI and model
+to `hardware.printers.ensurePrinters` in `system/printing.nix`.
+
 ## Structure
 
 ```
@@ -80,6 +97,7 @@ nixos-dotfiles/
 │   ├── locale.nix                  # Locale + timezone
 │   ├── network.nix                 # NetworkManager + systemd-resolved + SOPS WiFi
 │   ├── nix-settings.nix            # Flakes, garbage collection, Cachix, package policy
+│   ├── printing.nix                # CUPS, Avahi discovery, IPP, and HP printers
 │   ├── cpu-performance.nix         # amd_pstate=active, EPP lock, resume hook + k10temp
 │   ├── zram.nix                    # Compressed RAM swap (memoryPercent=50)
 │   ├── ananicy.nix                 # ananicy-cpp automatic nice-level daemon
@@ -103,6 +121,7 @@ nixos-dotfiles/
 │   │   ├── firefox.nix             # Firefox with GPU accel
 │   │   ├── ghostty.nix             # Ghostty terminal (Stylix)
 │   │   ├── kitty.nix               # Kitty terminal (Stylix)
+│   │   ├── thunderbird.nix         # Plain Thunderbird + default email handler
 │   │   ├── vscode.nix              # VSCode with extensions
 │   │   ├── zsh.nix                 # Zsh + Powerlevel10k
 │   │   ├── dunst.nix               # Notification daemon
