@@ -72,10 +72,28 @@
       };
     };
 
+    # Hyprland 0.56.x requires Glaze 7.x, while the current nixpkgs input
+    # provides Glaze 8.x. Keep the compatibility fix local to Hyprland.
+    hyprland-glaze-compat = final: prev: let
+      glaze7 = prev.glaze.overrideAttrs (_: {
+        version = "7.9.1";
+        src = prev.fetchFromGitHub {
+          owner = "stephenberry";
+          repo = "glaze";
+          tag = "v7.9.1";
+          hash = "sha256-NRRq5MGF2f5PW0teYnq58ELzson+U6KHVPaY6r30KLA=";
+        };
+      });
+    in {
+      inherit glaze7;
+      hyprland = prev.hyprland.override {glaze = glaze7;};
+    };
+
     # These overlays are shared by NixOS and the integrated Home Manager
     # configuration because both now evaluate against the same pkgs set.
     sharedOverlays = [
       overlay-unstable
+      hyprland-glaze-compat
       nix-doom-emacs-unstraightened.overlays.default
       (final: prev: {cozette = inputs.cozette.packages.${system}.default;})
       (final: prev: {

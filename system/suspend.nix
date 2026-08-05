@@ -1,18 +1,14 @@
 # system/suspend.nix
-# Suspend/resume robustness for NVIDIA + Hyprland + sched-ext.
+# Suspend/resume coordination for NVIDIA + Hyprland + sched-ext.
 #
-# Problem: on wake from suspend the system would sometimes hang/freeze (compositor
-# touching the GPU while it is suspended). Fixes:
+# The NVIDIA package in use does not provide NixOS's nvidia-sleep.sh helper, so
+# this module coordinates the userspace pieces directly. Fixes:
 #   - SIGSTOP Hyprland before suspend and SIGCONT after resume, so the compositor
 #     never races the GPU disappearing/reappearing.
 #   - Stop the scx (sched-ext) userspace scheduler before suspend and restart it
 #     after resume, since these schedulers are known to misbehave across CPU
 #     hotplug/suspend-resume cycles.
-{
-  pkgs,
-  ...
-}:
-{
+{pkgs, ...}: {
   imports = [
     ./hardware-configuration.nix
   ];
@@ -23,21 +19,23 @@
 
   systemd.services.hyprland-suspend = {
     description = "Pause Hyprland before suspend";
-    before = [ "systemd-suspend.service" "nvidia-suspend.service" ];
-    wantedBy = [ "systemd-suspend.service" ];
+    before = ["systemd-suspend.service"];
+    wantedBy = ["systemd-suspend.service"];
     serviceConfig = {
       Type = "oneshot";
-      ExecStart = "${pkgs.procps}/bin/pkill -STOP -x Hyprland || true";
+      # A leading '-' tells systemd to ignore a nonzero exit status when
+      # Hyprland is not running, without passing shell syntax to pkill.
+      ExecStart = "-${pkgs.procps}/bin/pkill -STOP -x Hyprland";
     };
   };
 
   systemd.services.hyprland-resume = {
     description = "Resume Hyprland after suspend";
-    after = [ "systemd-suspend.service" "nvidia-resume.service" ];
-    wantedBy = [ "systemd-suspend.service" ];
+    after = ["systemd-suspend.service"];
+    wantedBy = ["systemd-suspend.service"];
     serviceConfig = {
       Type = "oneshot";
-      ExecStart = "${pkgs.procps}/bin/pkill -CONT -x Hyprland || true";
+      ExecStart = "-${pkgs.procps}/bin/pkill -CONT -x Hyprland";
     };
   };
 
@@ -48,21 +46,23 @@
 
   systemd.services.scx-suspend = {
     description = "Stop SCX scheduler before suspend";
-    before = [ "systemd-suspend.service" ];
-    wantedBy = [ "systemd-suspend.service" ];
+    before = ["systemd-suspend.service"];
+    wantedBy = ["systemd-suspend.service"];
     serviceConfig = {
       Type = "oneshot";
-      ExecStart = "${pkgs.systemd}/bin/systemctl stop scx.service";
+      # Do not let an already-stopped scheduler block suspend.
+      ExecStart = "-${pkgs.systemd}/bin/systemctl stop scx.service";
     };
   };
 
   systemd.services.scx-resume = {
     description = "Start SCX scheduler after resume";
-    after = [ "systemd-suspend.service" ];
-    wantedBy = [ "systemd-suspend.service" ];
+    after = ["systemd-suspend.service"];
+    wantedBy = ["systemd-suspend.service"];
     serviceConfig = {
       Type = "oneshot";
-      ExecStart = "${pkgs.systemd}/bin/systemctl start scx.service";
+      # Do not let a scheduler restart failure prevent the system from waking.
+      ExecStart = "-${pkgs.systemd}/bin/systemctl start scx.service";
     };
   };
 }

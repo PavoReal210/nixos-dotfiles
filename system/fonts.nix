@@ -1,7 +1,10 @@
 # system/fonts.nix
 # System-wide font configuration
-{ config, pkgs, ... }:
 {
+  config,
+  pkgs,
+  ...
+}: {
   fonts.packages = with pkgs; [
     # Nerd Fonts
     nerd-fonts.fira-code
@@ -17,21 +20,20 @@
     nerd-fonts.ubuntu-sans
     nerd-fonts.victor-mono
     nerd-fonts.terminess-ttf
-    
+
     # Standard Fonts
     font-awesome
     noto-fonts
     noto-fonts-cjk-sans
     noto-fonts-color-emoji
     liberation_ttf
-    
+
     # Document Fonts
     et-book
     scientifica
 
     # Special Purpose Fonts
     weather-icons
-    symbola
   ];
   fonts.fontconfig.allowBitmaps = true;
 }

@@ -58,23 +58,6 @@ sudo nixos-rebuild switch --flake .#railgun
 # Home Manager activation command is required.
 ```
 
-## Printing
-
-Wi-Fi printing is configured in `system/printing.nix` using CUPS, Avahi/mDNS,
-driverless IPP discovery, and HPLIP for the HP printers used by this system.
-HPLIP is not required for non-HP printers unless their model needs it.
-
-After rebuilding with `nh os switch`, use one of these tools to add the printer:
-
-- `system-config-printer` for the graphical setup tool
-- `http://localhost:631` for the CUPS web interface
-- `lpinfo -v` to inspect discovered printer backends
-- `lpstat -p` to list configured printers
-
-The configuration intentionally does not hard-code a printer IP address. If a
-printer needs a persistent declarative entry, add its stable IPP URI and model
-to `hardware.printers.ensurePrinters` in `system/printing.nix`.
-
 ## Structure
 
 ```
@@ -221,6 +204,23 @@ RetroArch is built from `retroarch-bare` (nixpkgs has no `programs.retroarch` mo
 - **Upscaling**: seeded into `retroarch-core-options.cfg` on first run (only if the file is absent) — 4x internal resolution on PS1/PS2/GameCube, 6x Saturn, 1440x1440 Dreamcast, HD supersampling on SNES
 - **BIOS**: the ~8 MB of BIOS/system files actually required (PS1, PS2, Dreamcast, Saturn) are downloaded into `~/Emulation/bios` from [Abdess/retrobios](https://github.com/Abdess/retrobios) (pinned to a commit) only if missing, placed in the layout RetroArch cores expect. NES/SNES/N64/GBA/GC need no BIOS.
 - **RetroAchievements**: enabled globally (hardcore mode off, so rewind/savestates stay usable). Credentials are stored in sops (`retroachievements-username`/`retroachievements-password` in `system/secrets/secrets.yaml`) and seeded into RetroArch's config at activation, so they never land in the nix store.
+
+### Printing
+
+Wi-Fi printing is configured in `system/printing.nix` using CUPS, Avahi/mDNS,
+driverless IPP discovery, and HPLIP for the HP printers used by this system.
+HPLIP is not required for non-HP printers unless their model needs it.
+
+After rebuilding with `nh os switch`, use one of these tools to add the printer:
+
+- `system-config-printer` for the graphical setup tool
+- `http://localhost:631` for the CUPS web interface
+- `lpinfo -v` to inspect discovered printer backends
+- `lpstat -p` to list configured printers
+
+The configuration intentionally does not hard-code a printer IP address. If a
+printer needs a persistent declarative entry, add its stable IPP URI and model
+to `hardware.printers.ensurePrinters` in `system/printing.nix`.
 
 ## Suspend & Power
 

@@ -33,6 +33,7 @@
     imagemagick # Image manipulation
     libpng # PNG library
     librsvg # SVG rendering
+    celluloid # GTK frontend for mpv
     mpv # Video player (no custom config — default NixOS mpv wrapper)
     killall # Process killer
     ripgrep # Better grep

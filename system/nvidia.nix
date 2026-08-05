@@ -23,11 +23,14 @@
 
     nvidiaSettings = true;
 
-    # Enable power management for suspend/resume support.
-    # powerManagement.enable creates nvidia-suspend/resume services that
-    # save/restore VRAM during sleep (required for high-memory GPUs).
+    # The current CachyOS NVIDIA package does not ship the
+    # `nvidia-sleep.sh` helper expected by NixOS's power-management module.
+    # Enabling it would create broken nvidia-suspend/resume services and block
+    # the entire suspend transaction. Suspend coordination is handled by
+    # system/suspend.nix instead.
+    powerManagement.enable = false;
+
     # finegrained enables RTD3 (Runtime D3) power management for Ada Lovelace.
-    powerManagement.enable = true;
     powerManagement.finegrained = false;
 
     package = pkgs.nvidia_cachyos;
