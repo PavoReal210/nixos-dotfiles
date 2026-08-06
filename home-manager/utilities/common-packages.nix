@@ -10,6 +10,7 @@
     (pidgin.override { plugins = [ pidginPackages.purple-discord ]; }) # Discord via Pidgin (no Electron)
     gimp # Image editing
     krita # Digital painting
+    xournalpp # Handwritten notes and Org-mode figures
     libreoffice-qt6 # Office suite
     atril # PDF reader
     picard # Music metadata editor
