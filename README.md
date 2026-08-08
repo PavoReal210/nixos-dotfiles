@@ -22,7 +22,7 @@ This flake manages:
 |-----------|--------|
 | Compositor | Hyprland (blur, shadows, animations) |
 | Bar | Waybar |
-| Launcher | Bemenu |
+| Launcher | Bemenu + desktop-entry launcher |
 | Lockscreen | Hyprlock |
 | Idle | Hypridle |
 | Login / Greeter | greetd + ReGreet (Stylix-themed) |
@@ -33,6 +33,10 @@ This flake manages:
 ### Utilities
 
 Notifications: Dunst, Terminal: Ghostty/Kitty, Browser: Floorp, Editor: Doom Emacs + VSCode, Mail: Thunderbird, Spaced Rep: Anki, networkmanager-applet, blueman-applet, Maestral (Dropbox), PIA VPN.
+
+`Super + D` opens a Bemenu-backed desktop-entry launcher. It lists applications
+from `.desktop` files, like Rofi's `drun` mode, instead of every executable in
+`PATH`. Bemenu remains available for the power, VPN, clipboard, and window menus.
 
 ### Screenshots
 
@@ -122,7 +126,7 @@ nixos-dotfiles/
 │       │   └── hypridle.nix        # Idle management (lock, dpms, suspend)
 │       └── utilities/
 │           ├── bar/waybar.nix      # Waybar + custom modules
-│           ├── bemenu/             # Launcher, powermenu, VPN selector
+│           ├── bemenu/             # Desktop launcher, powermenu, VPN selector
 │           └── screenshot.nix      # Grimshot scripts (shot-full, shot-area)
 └── docs/                           # Documentation
     ├── devshells.md                # Development shell usage

@@ -4,7 +4,6 @@
   ...
 }: let
   terminal = "ghostty";
-  bemenu-cmd = "${pkgs.bemenu}/bin/bemenu-run";
 in {
   # ── Keybindings ────────────────────────────────────────────────────────────
   # Format: bind = MODS, KEY, DISPATCHER, ARGS
@@ -58,7 +57,8 @@ in {
       "$modifier, e, layoutmsg, togglesplit"
 
       # ── App Launchers ──
-      "$modifier, d, exec, ${bemenu-cmd}"
+      # Desktop-entry launcher: shows installable GUI apps, not every PATH binary.
+      "$modifier, d, exec, desktop-launcher"
       "$modifier SHIFT, d, exec, window-switcher"
       "$modifier, t, exec, ${terminal}"
       "$modifier, Return, exec, ${terminal}"
@@ -72,7 +72,7 @@ in {
       "$modifier SHIFT, s, exec, shot-area"
 
       # ── Clipboard History ──
-      "$modifier SHIFT, v, exec, cliphist list | ${pkgs.bemenu}/bin/bemenu -l 20 | cliphist decode | wl-copy"
+      "$modifier SHIFT, v, exec, cliphist list | bemenu-themed -l 20 | cliphist decode | wl-copy"
 
       # ── Lock & Power ──
       "$modifier, x, exec, ${pkgs.hyprlock}/bin/hyprlock"

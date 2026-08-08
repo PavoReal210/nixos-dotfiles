@@ -43,6 +43,9 @@
       };
 
       targets = {
+        # Bemenu has a dedicated configuration module so its colors and scale
+        # are controlled explicitly instead of being merged with Stylix defaults.
+        bemenu.enable = false;
         dunst.enable = false;
         gnome.enable = false;
         vesktop.enable = true;

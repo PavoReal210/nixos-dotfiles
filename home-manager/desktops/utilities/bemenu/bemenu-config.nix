@@ -3,41 +3,84 @@
   lib,
   pkgs,
   ...
-}:
-
-let
+}: let
   c = config.lib.stylix.colors;
-  bemenuSettings = {
-    tb = "#${c.base00}";
-    tf = "#${c.base0D}";
-    fb = "#${c.base00}";
-    ff = "#${c.base05}";
-    nb = "#${c.base00}";
-    nf = "#${c.base05}";
-    hb = "#${c.base0D}";
-    hf = "#${c.base00}";
-    fn = config.utils.fonts.describeFont config.utils.fonts.status;
-  };
-in
-{
-  programs.bemenu = {
-    enable = true;
 
-    # Integrated Home Manager does not expose its shell session variables to
-    # the graphical NixOS session, so bmenu needs this environment.d entry to
-    # receive the same colors and font when launched from Hyprland.
-    settings = lib.mapAttrs (_: lib.mkForce) bemenuSettings;
-  };
+  # Waybar uses 18px labels. Bemenu needs a slightly larger explicit size for
+  # readable text on this display, so use 20px for the menu font.
+  bemenuFont = config.utils.fonts.status // {size = 20;};
 
-  xdg.configFile."environment.d/20-bemenu.conf".text =
-    let
-      bemenuOpts = lib.cli.toCommandLineShell (optionName: {
-        option = if builtins.stringLength optionName > 1 then "--${optionName}" else "-${optionName}";
-        sep = null;
-        explicitBool = false;
-      }) config.programs.bemenu.settings;
-    in
-    "BEMENU_OPTS=${bemenuOpts}\n";
+  # Pass the complete palette directly on the command line. This avoids relying
+  # on BEMENU_OPTS being parsed consistently across shell and Hyprland sessions.
+  bemenuArgs = lib.escapeShellArgs [
+    "--ab"
+    "#${c.base00}"
+    "--af"
+    "#${c.base05}"
+    "--bdr"
+    "#${c.base0D}"
+    "--cb"
+    "#${c.base0D}"
+    "--cf"
+    "#${c.base00}"
+    "--fb"
+    "#${c.base00}"
+    "--fbb"
+    "#${c.base0D}"
+    "--fbf"
+    "#${c.base00}"
+    "--ff"
+    "#${c.base05}"
+    "--fn"
+    (config.utils.fonts.describeFont bemenuFont)
+    "--hb"
+    "#${c.base0D}"
+    "--hf"
+    "#${c.base00}"
+    "--nb"
+    "#${c.base00}"
+    "--nf"
+    "#${c.base05}"
+    "--sb"
+    "#${c.base0D}"
+    "--scb"
+    "#${c.base01}"
+    "--scf"
+    "#${c.base05}"
+    "--sf"
+    "#${c.base00}"
+    "--tb"
+    "#${c.base00}"
+    "--tf"
+    "#${c.base0D}"
+  ];
 
-  home.packages = with pkgs; [ bemoji ];
+  bemenu = pkgs.writeShellScriptBin "bemenu-themed" ''
+    exec ${pkgs.bemenu}/bin/bemenu ${bemenuArgs} "$@"
+  '';
+
+  bemenuRun = pkgs.writeShellScriptBin "bemenu-themed-run" ''
+    exec ${pkgs.bemenu}/bin/bemenu-run ${bemenuArgs} "$@"
+  '';
+
+  # j4-dmenu-desktop reads .desktop files instead of scanning every executable
+  # in PATH, giving Bemenu the same application set as Rofi's drun mode.
+  desktopLauncher = pkgs.writeShellScriptBin "desktop-launcher" ''
+    exec ${pkgs.j4-dmenu-desktop}/bin/j4-dmenu-desktop \
+      --dmenu="bemenu-themed" \
+      --no-generic \
+      --case-insensitive \
+      --term-mode custom \
+      --term "ghostty -e {cmdline@}"
+  '';
+in {
+  programs.bemenu.enable = true;
+
+  home.packages = with pkgs; [
+    bemenu
+    bemenuRun
+    bemoji
+    desktopLauncher
+    j4-dmenu-desktop
+  ];
 }

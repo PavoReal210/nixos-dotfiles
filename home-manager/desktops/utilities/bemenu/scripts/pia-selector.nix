@@ -1,8 +1,4 @@
-{
-  pkgs,
-  ...
-}:
-let
+{pkgs, ...}: let
   piaSelectorScript = pkgs.writeShellScriptBin "pia-selector" ''
     refresh_waybar() {
       pid=$(pgrep -x waybar | head -1)
@@ -20,7 +16,7 @@ let
         exit 1
       fi
 
-      chosen=$(echo "$regions" | ${pkgs.bemenu}/bin/bemenu -p "VPN" -l 15 2>/dev/null)
+      chosen=$(echo "$regions" | bemenu-themed -p "VPN" -l 15 2>/dev/null)
       [ -z "$chosen" ] && exit 0
 
       region_id=$(echo "$chosen" | awk '{print $1}')
@@ -37,7 +33,6 @@ let
       refresh_waybar
     fi
   '';
-in
-{
-  home.packages = [ piaSelectorScript ];
+in {
+  home.packages = [piaSelectorScript];
 }

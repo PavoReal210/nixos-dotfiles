@@ -2,9 +2,7 @@
   config,
   pkgs,
   ...
-}:
-
-let
+}: let
   c = config.lib.stylix.colors;
   bg = "#${c.base00}";
   fg = "#${c.base05}";
@@ -13,14 +11,12 @@ let
   red = "#${c.base08}";
   yellow = "#${c.base09}";
   green = "#${c.base0B}";
-  pia-status = import ./scripts/pia-status.nix { inherit pkgs; };
-  keyboard-layout = import ./scripts/keyboard-layout.nix { inherit pkgs; };
-  keyboard-toggle = import ./scripts/keyboard-toggle.nix { inherit pkgs; };
-  system-temps = import ./scripts/system-temps.nix { inherit pkgs; };
-  weather = import ./scripts/weather.nix { inherit pkgs; };
-
-in
-{
+  pia-status = import ./scripts/pia-status.nix {inherit pkgs;};
+  keyboard-layout = import ./scripts/keyboard-layout.nix {inherit pkgs;};
+  keyboard-toggle = import ./scripts/keyboard-toggle.nix {inherit pkgs;};
+  system-temps = import ./scripts/system-temps.nix {inherit pkgs;};
+  weather = import ./scripts/weather.nix {inherit pkgs;};
+in {
   sops = {
     age.keyFile = "${config.home.homeDirectory}/.config/sops/age/keys.txt";
     secrets.weather-api-key = {
@@ -244,25 +240,25 @@ in
         border: none;
         border-radius: 0;
         font-family: "${config.utils.fonts.status.family}:style=${config.utils.fonts.status.style}";
-        font-size: ${toString config.utils.fonts.status.size}px;
+         font-size: 20px;
         font-weight: ${config.utils.fonts.status.weight};
       }
 
       window#waybar {
         background: @background;
         color: @foreground;
-        font-size: 18px;
+         font-size: 20px;
         transition-property: background-color;
         transition-duration: 0.5s;
         border-bottom: 2px solid alpha(@foreground, 0.1);
       }
 
       #waybar {
-        font-size: 18px;
+         font-size: 20px;
       }
 
       label {
-        font-size: 18px;
+         font-size: 20px;
       }
 
       #workspaces button {

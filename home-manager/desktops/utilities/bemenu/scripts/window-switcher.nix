@@ -1,8 +1,4 @@
-{
-  pkgs,
-  ...
-}:
-let
+{pkgs, ...}: let
   windowSwitcher = pkgs.writeShellScriptBin "window-switcher" ''
     hyprctl clients -j 2>/dev/null | ${pkgs.jq}/bin/jq -r '
       .[] |
@@ -23,12 +19,11 @@ let
       esac
       short=$(echo "$title" | head -c 60)
       echo -e "$icon $short\t$addr"
-    done | ${pkgs.bemenu}/bin/bemenu -p "Window" -l 20 -n | awk '{print $NF}' | {
+    done | bemenu-themed -p "Window" -l 20 | awk '{print $NF}' | {
       read -r addr
       [ -n "$addr" ] && hyprctl dispatch focuswindow "address:0x$addr" 2>/dev/null
     }
   '';
-in
-{
-  home.packages = [ windowSwitcher ];
+in {
+  home.packages = [windowSwitcher];
 }

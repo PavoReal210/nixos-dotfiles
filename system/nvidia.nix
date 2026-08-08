@@ -33,7 +33,10 @@
     # finegrained enables RTD3 (Runtime D3) power management for Ada Lovelace.
     powerManagement.finegrained = false;
 
-    package = pkgs.nvidia_cachyos;
+    # Use the kernel-matched nixpkgs driver. The Chaotic/CachyOS 610.x package
+    # currently leaves a forbidden reference to the kernel -dev output in its
+    # kernel modules, which fails Nix store purity checks.
+    package = pkgs.linuxPackages_cachyos.nvidiaPackages.stable;
   };
 
   # ── Kernel modules ───────────────────────────────────────────────────────────
