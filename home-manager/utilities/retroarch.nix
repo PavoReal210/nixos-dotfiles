@@ -25,7 +25,7 @@
         flycast # Dreamcast
         beetle-saturn # Sega Saturn
       ];
-      settings = { };
+      settings = {};
     })
   ];
 
@@ -34,7 +34,7 @@
   # SSH keys (see ssh.nix). Decrypted to ~/.config/sops-nix/secrets/ at runtime
   # by the sops-nix user service, then seeded into retroarch.cfg below.
   sops = {
-    age.keyFile = "${config.home.homeDirectory}/.config/sops/age/keys.txt";
+    age.keyFile = "/etc/sops/age/keys.txt";
     secrets.retroachievements-username.sopsFile = ../../system/secrets/secrets.yaml;
     secrets.retroachievements-password.sopsFile = ../../system/secrets/secrets.yaml;
   };
@@ -63,44 +63,11 @@
       fi
     '';
 
-    # Download the BIOS/system files the chosen cores actually need into
-    # ~/Emulation/bios, but only the ones missing on disk (idempotent — a
-    # manually-curated BIOS folder is never overwritten).
-    #
-    # Source: Abdess/retrobios, pinned to a commit for reproducibility.
-    # The repo organizes BIOS under bios/<Manufacturer>/<System>/..., which is
-    # NOT where RetroArch looks: cores want exact filenames at the top of the
-    # system dir (or in pcsx2/bios/), so we place each file exactly where the
-    # core will find it. NES/SNES/N64/GBA/GC need no BIOS at all.
-    linkRetroArchBios = lib.hm.dag.entryAfter ["writeBoundary"] ''
-      BIOS_DIR="$HOME/Emulation/bios"
-      mkdir -p "$BIOS_DIR/pcsx2/bios"
-
-      fetch_bios() {
-        local url="$1" dest="$2"
-        if [[ ! -e "$dest" ]]; then
-          mkdir -p "$(dirname "$dest")"
-          ${pkgs.curl}/bin/curl -fsSL "$url" -o "$dest"
-          chmod 644 "$dest"
-        fi
-      }
-
-      REV=e90095abd9417d78327bd0fe0666f6dc102eb06b
-      BASE="https://raw.githubusercontent.com/Abdess/retrobios/$REV/bios"
-
-      # PlayStation (beetle-psx-hw): JP / US / EU BIOS at system dir root.
-      fetch_bios "$BASE/Sony/PlayStation/scph5500.bin" "$BIOS_DIR/scph5500.bin"
-      fetch_bios "$BASE/Sony/PlayStation/scph5501.bin" "$BIOS_DIR/scph5501.bin"
-      fetch_bios "$BASE/Sony/PlayStation/scph5502.bin" "$BIOS_DIR/scph5502.bin"
-      # PlayStation 2 (pcsx2): the BIOS must live under pcsx2/bios/.
-      # SCPH-39001 is the community-recommended NTSC-U dump; pcsx2 generates
-      # its nvm/eeprom files on first boot.
-      fetch_bios "$BASE/Sony/PlayStation%202/SCPH-39001.bin" "$BIOS_DIR/pcsx2/bios/SCPH-39001.bin"
-      # Dreamcast (flycast): boot ROM + flash ROM at system dir root.
-      fetch_bios "$BASE/Sega/Dreamcast/dc_boot.bin" "$BIOS_DIR/dc_boot.bin"
-      fetch_bios "$BASE/Sega/Dreamcast/dc_flash.bin" "$BIOS_DIR/dc_flash.bin"
-      # Sega Saturn (beetle-saturn): mpr-17933.bin is an accepted BIOS name.
-      fetch_bios "$BASE/Sega/Saturn/mpr-17933.bin" "$BIOS_DIR/mpr-17933.bin"
+    # BIOS files are intentionally user-provided. Downloading ROM firmware
+    # during activation is non-reproducible, unverified, and may be illegal
+    # depending on the source and jurisdiction.
+    ensureRetroArchBiosDirectory = lib.hm.dag.entryAfter ["writeBoundary"] ''
+      mkdir -p "$HOME/Emulation/bios/pcsx2/bios"
     '';
 
     # Seed the RetroAchievements credentials from sops into retroarch.cfg,
@@ -116,8 +83,34 @@
       if [[ -f "$USER_FILE" && -f "$PASS_FILE" ]]; then
         mkdir -p "$(dirname "$RA_CFG")"
         [[ -e "$RA_CFG" ]] || touch "$RA_CFG"
-        grep -q '^cheevos_username' "$RA_CFG" || echo "cheevos_username = \"$(cat "$USER_FILE")\"" >> "$RA_CFG"
-        grep -q '^cheevos_password' "$RA_CFG" || echo "cheevos_password = \"$(cat "$PASS_FILE")\"" >> "$RA_CFG"
+        chmod 600 "$RA_CFG"
+
+        escape_cfg_value() {
+          local value="$1"
+          value="''${value//\\/\\\\}"
+          value="''${value//\"/\\\"}"
+          value="''${value//$'\n'/\\n}"
+          printf '%s' "$value"
+        }
+
+        USER_VALUE="$(escape_cfg_value "$(<"$USER_FILE")")"
+        PASS_VALUE="$(escape_cfg_value "$(<"$PASS_FILE")")"
+        TMP_CFG="$(mktemp "''${RA_CFG}.XXXXXX")"
+        trap 'rm -f "$TMP_CFG"' EXIT
+
+        while IFS= read -r line || [[ -n "$line" ]]; do
+          case "$line" in
+            cheevos_username\ =\ *) printf 'cheevos_username = "%s"\n' "$USER_VALUE" ;;
+            cheevos_password\ =\ *) printf 'cheevos_password = "%s"\n' "$PASS_VALUE" ;;
+            *) printf '%s\n' "$line" ;;
+          esac
+        done < "$RA_CFG" > "$TMP_CFG"
+
+        grep -q '^cheevos_username = ' "$TMP_CFG" || printf 'cheevos_username = "%s"\n' "$USER_VALUE" >> "$TMP_CFG"
+        grep -q '^cheevos_password = ' "$TMP_CFG" || printf 'cheevos_password = "%s"\n' "$PASS_VALUE" >> "$TMP_CFG"
+        chmod 600 "$TMP_CFG"
+        mv "$TMP_CFG" "$RA_CFG"
+        trap - EXIT
       fi
     '';
   };

@@ -9,11 +9,15 @@ SOPS (Secrets OPerationS) is used for managing encrypted secrets in this configu
    nix shell nixpkgs#sops
    ```
 
-2. Generate an age key (if you don't have one):
+2. Generate an age key for editing secrets (if you don't have one):
    ```bash
    mkdir -p ~/.config/sops/age/
    nix shell nixpkgs#age -c age-keygen -o ~/.config/sops/age/keys.txt
    ```
+
+3. Provision the same key for system services at `/etc/sops/age/keys.txt`
+   during installation. Both system and Home Manager activation use that path.
+   This configuration intentionally makes that file readable by the local user.
 
 ## Adding WiFi to SOPS (after initial setup)
 

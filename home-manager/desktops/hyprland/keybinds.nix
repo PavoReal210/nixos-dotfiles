@@ -2,9 +2,11 @@
   config,
   pkgs,
   ...
-}: let
+}:
+let
   terminal = "ghostty";
-in {
+in
+{
   # ── Keybindings ────────────────────────────────────────────────────────────
   # Format: bind = MODS, KEY, DISPATCHER, ARGS
   # MODS: SUPER, SHIFT, CTRL, ALT (can combine with ,)
@@ -91,7 +93,7 @@ in {
       # ── Custom App Launchers (Emacs, Anki, Emoji) ──
       "CTRL ALT, z, exec, emacsclient -c -a emacs"
       "CTRL ALT, e, exec, bemoji"
-      "CTRL ALT, a, exec, ${config.programs.anki.package}/bin/anki"
+      "CTRL ALT, a, exec, anki"
 
       # ── Workspace Switching ──
       "$modifier, 1, workspace, 1"

@@ -18,7 +18,7 @@
   weather = import ./scripts/weather.nix {inherit pkgs;};
 in {
   sops = {
-    age.keyFile = "${config.home.homeDirectory}/.config/sops/age/keys.txt";
+    age.keyFile = "/etc/sops/age/keys.txt";
     secrets.weather-api-key = {
       sopsFile = ../../../../system/secrets/weather-api-key.age;
       format = "binary";

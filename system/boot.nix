@@ -1,11 +1,6 @@
 # system/boot.nix
 # Bootloader configuration with Lanzaboote for Secure Boot
-{ pkgs, ... }:
-{
-  imports = [
-    ./hardware-configuration.nix
-  ];
-
+{pkgs, ...}: {
   # Lanzaboote enables systemd-boot internally; we just set options here
   boot.loader.systemd-boot = {
     consoleMode = "max";

@@ -1,11 +1,10 @@
 # system/audio.nix
 # Audio configuration with PipeWire
-{ config, pkgs, ... }:
 {
-  imports = [ 
-    # Include the results of the hardware scan.
-    ./hardware-configuration.nix
-  ];
+  config,
+  pkgs,
+  ...
+}: {
   # Disable PulseAudio (we use PipeWire)
   services.pulseaudio.enable = false;
 

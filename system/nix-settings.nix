@@ -36,9 +36,8 @@
     # Allow unfree packages
     allowUnfree = true;
 
-    # Allow known insecure packages (EOL Electron required by some apps)
-    permittedInsecurePackages = [
-      "electron-39.8.10"
-    ];
+    # Keep insecure package exceptions empty. Add a narrowly documented,
+    # temporary exception only when a package actually requires one.
+    permittedInsecurePackages = [];
   };
 }

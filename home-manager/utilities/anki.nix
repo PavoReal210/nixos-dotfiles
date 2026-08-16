@@ -7,7 +7,8 @@
   config,
   pkgs,
   ...
-}: let
+}:
+let
   # "Multi-Line Type Answer Box - 2" (ankiweb id 1018107736), pinned from the
   # ankiweb download endpoint. tinycss/speedups.so is a macOS Mach-O binary
   # that can't load on Linux — tinycss falls back to pure Python — so we drop
@@ -19,28 +20,11 @@
       url = "https://ankiweb.net/shared/download/1018107736?v=2.1&p=1018107736";
       hash = "sha256-RKxt0n+0mo+xzgUEcOuiW8gfQD4QgzbyTpV2mmnsuXs=";
     };
-    nativeBuildInputs = [pkgs.unzip];
+    nativeBuildInputs = [ pkgs.unzip ];
     unpackPhase = ''
       unzip $src -d .
       rm -rf __MACOSX
       rm -f tinycss/speedups.so
-    '';
-  };
-
-  # "Anki Markdown" (ankiweb id 1172202975), pinned from the ankiweb download
-  # endpoint. Requires Anki 25.x+. Renders Markdown fields with syntax
-  # highlighting powered by Shiki. The zip ships no platform binaries, so no
-  # unpack cleanup is needed.
-  anki-markdown = pkgs.anki-utils.buildAnkiAddon {
-    pname = "anki-markdown";
-    version = "1.4.4";
-    src = pkgs.fetchurl {
-      url = "https://ankiweb.net/shared/download/1172202975?v=2.1&p=1172202975";
-      hash = "sha256-jahbgsGESVZelLvls4WDzi66IoBsIALntxH6O0p5AEY=";
-    };
-    nativeBuildInputs = [pkgs.unzip];
-    unpackPhase = ''
-      unzip $src -d .
     '';
   };
 
@@ -50,34 +34,36 @@
   anki = pkgs.anki.overrideAttrs (old: {
     buildPhase =
       builtins.replaceStrings
-      [
-        "uv export --no-dev | strip_versions > requirements.txt"
-        "uv export --project qt --extra qt --extra audio"
-        "uv export --project pylib |"
-      ]
-      [
-        "printf '' > requirements.txt"
-        "uv export --project qt --extra qt --extra audio --no-dev --no-group dev"
-        "uv export --project pylib --no-dev --no-group dev |"
-      ]
-      old.buildPhase;
+        [
+          "uv export --no-dev | strip_versions > requirements.txt"
+          "uv export --project qt --extra qt --extra audio"
+          "uv export --project pylib |"
+        ]
+        [
+          "printf '' > requirements.txt"
+          "uv export --project qt --extra qt --extra audio --no-dev --no-group dev"
+          "uv export --project pylib --no-dev --no-group dev |"
+        ]
+        old.buildPhase;
 
     # pkgs.anki's original passthru captures the unpatched package. Replace
     # its input in the addon wrapper so Home Manager uses this fixed package.
-    passthru =
-      (old.passthru or {})
-      // {
-        withAddons = addons:
-          (old.passthru.withAddons addons).overrideAttrs (_: {
-            paths = [anki];
-          });
-      };
+    passthru = (old.passthru or { }) // {
+      withAddons =
+        addons:
+        (old.passthru.withAddons addons).overrideAttrs (_: {
+          paths = [ anki ];
+        });
+    };
   });
-in {
+in
+{
   programs.anki = {
     enable = true;
     package = anki;
-    addons = [multi-line-type-answer-box anki-markdown];
+    addons = [
+      multi-line-type-answer-box
+    ];
     profiles."User 1".sync = {
       usernameFile = config.sops.secrets.anki-username.path;
       keyFile = config.sops.secrets.anki-sync-key.path;
@@ -88,7 +74,7 @@ in {
   # sops-nix user service; read by the hm-sync-config addon at runtime, so they
   # never end up in the nix store.
   sops = {
-    age.keyFile = "${config.home.homeDirectory}/.config/sops/age/keys.txt";
+    age.keyFile = "/etc/sops/age/keys.txt";
     secrets.anki-username.sopsFile = ../../system/secrets/secrets.yaml;
     secrets.anki-sync-key.sopsFile = ../../system/secrets/secrets.yaml;
   };

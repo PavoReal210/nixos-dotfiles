@@ -5,10 +5,11 @@ from your terminal. Each devShell gives you temporary access to a curated set
 of tools without permanently installing them into your base system.
 
 The devShells are defined as `mkShell` derivations in home-manager modules
-under `home-manager/devshells/`. Their packages are pulled from the flake's
+under `home-manager/utilities/devshells/`. Their packages are pulled from the flake's
 pinned `nixpkgs`, so they stay version-locked until you `nix flake update`.
 
-For Neovim editor integration, see [neovim-dotfiles/README.md](../neovim-dotfiles/README.md#system-dependencies).
+Neovim is intentionally provided without plugins for quick terminal edits; its
+system dependencies are managed by `home-manager/utilities/development-tools.nix`.
 
 ---
 
@@ -134,7 +135,7 @@ You're outside the dev shell. Run `c-dev` / `py-dev` / `rs-dev` first.
 
 ### Missing a library or tool
 
-Edit the relevant file in `home-manager/devshells/`, add the package to the
+Edit the relevant file in `home-manager/utilities/devshells/`, add the package to the
 `packages` list inside `pkgs.mkShell`, then run:
 
 ```bash
@@ -164,7 +165,7 @@ update
 
 To add a new tool to an existing devShell:
 
-1. Edit the module in `home-manager/devshells/` (e.g. `c-general-devshell.nix`)
+1. Edit the module in `home-manager/utilities/devshells/` (e.g. `c-general-devshell.nix`)
 2. Add the package to the `packages` list inside `pkgs.mkShell`
 3. Run `sudo nixos-rebuild switch --flake ~/GitRepos/nixos-dotfiles#railgun` to install the updated script
 

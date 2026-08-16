@@ -23,9 +23,7 @@
     firewall = {
       enable = true;
       allowedTCPPorts = [
-        22 # SSH
-        5500 # live-server
-        8081 # qbittorrent WebUI
+        22 # SSH; remove this if remote administration is not needed
       ];
     };
     hostName = "railgun-linux-desktop";

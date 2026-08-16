@@ -3,14 +3,12 @@
   lib,
   pkgs,
   ...
-}:
-{
+}: {
   programs.floorp = {
     enable = true;
 
     profiles.default = {
       settings = {
-
         # ── WebRender / GPU compositing ────────────────────────────────────────
         #
         # NOTE: gfx.webrender.compositor is deliberately DISABLED on NVIDIA+Wayland
@@ -27,14 +25,6 @@
         "webgl.out-of-process.enabled" = true;
         "media.gpu-process-decoder" = true;
         "gfx.canvas.accelerated" = true;
-
-        # ── Content processes ────────────────────────────────────────────────
-        #
-        # Ryzen 5800X has 8 cores — let Floorp use them.
-        # Default is 4, which leaves half the CPU idle under tab load.
-
-        "dom.ipc.processCount" = 8;
-        "dom.ipc.processCount.webIsolated" = 8;
 
         # ── Hardware video decode (NVDEC via VA-API) ───────────────────────────
         #
@@ -89,6 +79,6 @@
 
   stylix.targets.floorp = {
     enable = true;
-    profileNames = [ "default" ];
+    profileNames = ["default"];
   };
 }

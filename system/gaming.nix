@@ -6,14 +6,17 @@
 #   - Gamemode (Feral Interactive's performance optimizer)
 #   - Lutris + Heroic (game launchers)
 #   - Kernel parameters for maximum gaming performance
-{ config, pkgs, ... }:
 {
+  config,
+  pkgs,
+  ...
+}: {
   # ── Steam Configuration ─────────────────────────────────────────────────────
 
   programs.steam = {
     enable = true;
     package = pkgs.steam.override {
-      extraEnv = { STEAM_FORCE_DESKTOPUI_SCALING = "1.6"; };
+      extraEnv = {STEAM_FORCE_DESKTOPUI_SCALING = "1.6";};
     };
     gamescopeSession.enable = true;
     protontricks.enable = true;
@@ -55,12 +58,6 @@
   # ── Kernel Parameters ────────────────────────────────────────────────────────
 
   boot.kernelParams = [
-    # Disable CPU mitigations for maximum single-thread performance.
-    # Trade-off: reduced security against Spectre/Meltdown-class attacks.
-    # On a desktop with untrusted code only from game binaries, this is
-    # generally acceptable.
-    "mitigations=off"
-
     # Full preemption gives the kernel the ability to interrupt any task at
     # nearly any point, reducing worst-case scheduling latency for the game
     # thread and compositor.

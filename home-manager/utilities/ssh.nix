@@ -4,7 +4,7 @@
 {
   # Sops secrets for ssh
   sops = {
-    age.keyFile = "${config.home.homeDirectory}/.config/sops/age/keys.txt";
+    age.keyFile = "/etc/sops/age/keys.txt";
     secrets.github-ssh-key = {
       sopsFile = ../../system/secrets/github-ssh-key.age;
       format = "binary";

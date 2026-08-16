@@ -2,3 +2,10 @@ result
 result/
 .vscode/
 *.bak
+.direnv/
+.devenv/
+*.swp
+*.swo
+.DS_Store
+.env
+result-*

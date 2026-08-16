@@ -1,10 +1,6 @@
 # system/nvidia.nix
 # NVIDIA RTX 4060 (Ada Lovelace) — Wayland/Hyprland optimized
 {pkgs, ...}: {
-  imports = [
-    ./hardware-configuration.nix
-  ];
-
   # ── Graphics stack ───────────────────────────────────────────────────────────
 
   hardware.graphics = {

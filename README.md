@@ -104,8 +104,7 @@ nixos-dotfiles/
 │   │   ├── development-tools.nix   # Rust, Python, C/C++, Nix, LaTeX
 │   │   ├── devshells/              # Pinned dev environments (c-dev, py-dev, rs-dev)
 │   │   ├── doom.nix                # Doom Emacs (nix-doom-emacs-unstraightened)
-│   │   ├── retroarch.nix            # RetroArch + RetroAchievements, BIOS seeding
-│   │   ├── firefox.nix             # Firefox with GPU accel
+│   │   ├── retroarch.nix            # RetroArch + RetroAchievements, BIOS directory
 │   │   ├── ghostty.nix             # Ghostty terminal (Stylix)
 │   │   ├── kitty.nix               # Kitty terminal (Stylix)
 │   │   ├── thunderbird.nix         # Plain Thunderbird + default email handler
@@ -187,7 +186,6 @@ The configuration includes a dedicated gaming module (`system/gaming.nix`) with:
 
 ### Kernel Optimizations
 
-- `mitigations=off` — Disables CPU security mitigations for maximum single-thread performance
 - `preempt=full` — Full preemption for better desktop responsiveness during gaming
 - `vm.swappiness=10` — Keeps games in physical RAM
 - `vm.vfs_cache_pressure=50` — Faster game asset reads
@@ -206,7 +204,7 @@ RetroArch is built from `retroarch-bare` (nixpkgs has no `programs.retroarch` mo
 - **Cores**: NES (`mesen`), SNES (`bsnes-hd` + `snes9x`), N64 (`mupen64plus`), PS1 (`beetle-psx-hw`), PS2 (`pcsx2`), GameCube/Wii (`dolphin`), GBA (`mgba`), Dreamcast (`flycast`), Sega Saturn (`beetle-saturn`)
 - **Video**: Vulkan on the RTX 4060, fullscreen, nearest-neighbour scaling, vsync on
 - **Upscaling**: seeded into `retroarch-core-options.cfg` on first run (only if the file is absent) — 4x internal resolution on PS1/PS2/GameCube, 6x Saturn, 1440x1440 Dreamcast, HD supersampling on SNES
-- **BIOS**: the ~8 MB of BIOS/system files actually required (PS1, PS2, Dreamcast, Saturn) are downloaded into `~/Emulation/bios` from [Abdess/retrobios](https://github.com/Abdess/retrobios) (pinned to a commit) only if missing, placed in the layout RetroArch cores expect. NES/SNES/N64/GBA/GC need no BIOS.
+- **BIOS**: `~/Emulation/bios` and `~/Emulation/bios/pcsx2/bios` are created during activation, but BIOS files must be supplied from your own legally obtained dumps. Activation does not download or trust firmware from the network.
 - **RetroAchievements**: enabled globally (hardcore mode off, so rewind/savestates stay usable). Credentials are stored in sops (`retroachievements-username`/`retroachievements-password` in `system/secrets/secrets.yaml`) and seeded into RetroArch's config at activation, so they never land in the nix store.
 
 ### Printing
@@ -230,9 +228,9 @@ to `hardware.printers.ensurePrinters` in `system/printing.nix`.
 
 Suspend/resume is hardened against the classic NVIDIA + Wayland "dies on wake" hang (`system/suspend.nix`):
 
-- **Hyprland is frozen during suspend** — `hyprland-suspend.service` SIGSTOPs the compositor before the GPU is suspended and `hyprland-resume.service` SIGCONTs it after wake, so it never races the GPU disappearing/reappearing.
-- **sched-ext scheduler is cycled** — `scx-suspend.service`/`scx-resume.service` unload `scx_rustland` before sleep and reload it after wake (userspace schedulers can wedge on CPU hotplug across resume).
-- **CPU performance settings re-applied on resume** — `powerManagement.resumeCommands` re-locks EPP and the 4600 MHz scaling limits after wake (`system/cpu-performance.nix`).
+- **Hyprland is frozen during suspend** — the system sleep hook SIGSTOPs the compositor before the GPU is suspended and SIGCONTs it after wake, so it never races the GPU disappearing/reappearing.
+- **sched-ext scheduler is cycled** — the system sleep hook stops `scx_rustland` before sleep and reloads it after wake (userspace schedulers can wedge on CPU hotplug across resume).
+- **CPU performance settings re-applied on resume** — `powerManagement.resumeCommands` reapplies the performance EPP after wake (`system/cpu-performance.nix`).
 - **Displays re-enable cleanly** — hypridle waits 1s after resume before turning DPMS back on.
 
 Locking:
@@ -276,6 +274,6 @@ Secrets include WiFi, PIA VPN, and the RetroAchievements credentials (`retroachi
 
 - `hardware-configuration.nix` needs real btrfs UUIDs when deployed
 - Update `users.nix` with the correct user UID
-- SOPS requires `~/.config/sops/age.keys` or `~/.ssh/id_ed25519`
+- SOPS CLI uses `~/.config/sops/age/keys.txt`; system and Home Manager activation use `/etc/sops/age/keys.txt`
 - Doom Emacs config is managed via the [railgun210/doom-emacs](https://github.com/railgun210/doom-emacs) repository, pulled in as a flake input
 - Vanilla Neovim is available for quick terminal edits with no plugin overhead

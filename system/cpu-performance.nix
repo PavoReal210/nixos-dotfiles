@@ -15,8 +15,8 @@
 # - amd_pstate is in active mode, which lets hardware directly control frequency
 #   from EPP hints for lowest latency.
 {pkgs, ...}: let
-  # Lock each CPU to EPP=performance and min=max=4600 MHz.
-  # Shared between the boot service and the resume hook so both stay in sync.
+  # Set each CPU policy to the performance EPP while leaving valid frequency
+  # and boost limits under kernel/firmware control.
   cpuPerformanceScript = ''
     # Set EPP to performance on every CPU policy
     for policy in /sys/devices/system/cpu/cpufreq/policy*; do
@@ -24,20 +24,8 @@
         echo performance > "$policy/energy_performance_preference"
     done
 
-    # Lock min and max frequency to the maximum boost clock (4600 MHz)
-    for cpu in /sys/devices/system/cpu/cpu*/online; do
-      dir="$(dirname "$cpu")"
-      [ -e "$dir/cpufreq/scaling_min_freq" ] && \
-        echo 4600000 > "$dir/cpufreq/scaling_min_freq" 2>/dev/null || true
-      [ -e "$dir/cpufreq/scaling_max_freq" ] && \
-        echo 4600000 > "$dir/cpufreq/scaling_max_freq" 2>/dev/null || true
-    done
   '';
 in {
-  imports = [
-    ./hardware-configuration.nix
-  ];
-
   # ── Kernel parameters ──────────────────────────────────────────────────────────
 
   boot.kernelParams = [
@@ -88,15 +76,15 @@ in {
   #   power              = 192  (idle)
   #   power-save         = 255  (min freq)
 
-  # systemd service to pin each CPU to maximum performance on boot and after resume.
+  # systemd service to select maximum performance preference on boot and after resume.
   # - EPP=performance tells amd-pstate to always prefer the highest frequency.
-  # - min=max=4600 MHz locks the frequency so no scaling decisions are made at all;
-  #   this eliminates any latency from frequency transitions entirely.
+  # - Frequency limits remain dynamic so this works with the actual firmware
+  #   limits and does not disable normal boost behavior.
   # - Because power-profiles-daemon is not running, this is the only thing setting EPP,
   #   so we handle both boot (wantedBy) and resume (ExecStopPost would be a hack;
   #   instead a full systemd resume hook could be added if needed).
   systemd.services.cpu-performance-epp = {
-    description = "Lock CPU to max performance: EPP=performance, freq 4600 MHz";
+    description = "Set CPU frequency policy to performance EPP";
     wantedBy = ["multi-user.target"];
     after = ["sysinit.target"];
     restartIfChanged = false;
@@ -107,8 +95,8 @@ in {
     script = cpuPerformanceScript;
   };
 
-  # Re-apply EPP and the frequency lock after resume: amd_pstate can reset the
-  # scaling limits across the suspend/resume cycle, leaving the CPU untuned.
+  # Re-apply EPP after resume: amd_pstate can reset policy preferences across
+  # the suspend/resume cycle.
   powerManagement.resumeCommands = cpuPerformanceScript;
 
   # ── Thermal management ───────────────────────────────────────────────────────
