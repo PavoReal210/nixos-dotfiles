@@ -15,6 +15,9 @@
       # Dropbox client
       "${pkgs.maestral}/bin/maestral start"
 
+      # Email client
+      "${pkgs.thunderbird}/bin/thunderbird"
+
       # Status bar (waybar auto-detects hyprland)
       "${pkgs.waybar}/bin/waybar"
 

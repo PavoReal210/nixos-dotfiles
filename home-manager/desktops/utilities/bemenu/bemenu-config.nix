@@ -33,6 +33,7 @@
     "#${c.base05}"
     "--fn"
     (config.utils.fonts.describeFont bemenuFont)
+    "--ignorecase"
     "--hb"
     "#${c.base0D}"
     "--hf"
@@ -75,6 +76,37 @@
   '';
 in {
   programs.bemenu.enable = true;
+
+  # These packages do not consistently expose desktop files through the
+  # profile, so provide standard entries for j4-dmenu-desktop explicitly.
+  home.file = {
+    ".local/share/applications/anki-launcher.desktop".text = ''
+      [Desktop Entry]
+      Type=Application
+      Name=Anki
+      Exec=anki
+      Icon=anki
+      Categories=Education;
+    '';
+
+    ".local/share/applications/system-config-printer-launcher.desktop".text = ''
+      [Desktop Entry]
+      Type=Application
+      Name=Print Settings
+      Exec=system-config-printer
+      Icon=printer
+      Categories=Settings;HardwareSettings;
+    '';
+
+    ".local/share/applications/steam-launcher.desktop".text = ''
+      [Desktop Entry]
+      Type=Application
+      Name=Steam
+      Exec=steam
+      Icon=steam
+      Categories=Game;
+    '';
+  };
 
   home.packages = with pkgs; [
     bemenu

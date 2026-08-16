@@ -40,6 +40,7 @@
     # Game launchers
     lutris
     heroic # Epic Games / GOG launcher
+    gamepad-tool # SDL2 gamepad mapping editor
 
     # Communication
     discord-krisp

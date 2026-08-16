@@ -107,7 +107,7 @@
     }
     windowrule {
       name = thunderbird-ws7
-      match:class = ^(org\\.mozilla\\.Thunderbird|Thunderbird)$
+      match:class = ^(org\\.mozilla\\.Thunderbird|[Tt]hunderbird)$
       workspace = 7 silent
     }
   '';

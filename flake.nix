@@ -94,6 +94,15 @@
     sharedOverlays = [
       overlay-unstable
       hyprland-glaze-compat
+      (final: prev: {
+        ananicy-cpp = prev.ananicy-cpp.overrideAttrs (old: {
+          postPatch = (old.postPatch or "") + ''
+            sed -i '1i#include <cstdint>' src/platform/linux/backtrace.cpp
+            sed -i '1i#include <cstring>' src/utility/argument_parsing/argument.cpp
+            sed -i '1i#include <cstring>' src/platform/linux/singleton_process.cpp
+          '';
+        });
+      })
       nix-doom-emacs-unstraightened.overlays.default
       (final: prev: {cozette = inputs.cozette.packages.${system}.default;})
       (final: prev: {
