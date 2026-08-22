@@ -81,12 +81,21 @@
       float = true
     }
 
-    # RetroArch — float it so the window is freely resizable and the tiling
-    # layout rules don't apply to it.
+    # Games launched by Steam use the steam_app_<appid> class under XWayland.
+    # Keep them out of the tiling layout without forcing fullscreen.
     windowrule {
-      name = retroarch-float
+      name = steam-game-float
+      match:class = ^(steam_app_[0-9]+)$
+      float = true
+    }
+
+    # RetroArch — keep it out of the tiling layout and start it fullscreen.
+    # Remove `fullscreen` if a freely resizable floating window is preferred.
+    windowrule {
+      name = retroarch-fullscreen
       match:class = ^(com\\.libretro\\.RetroArch)$
       float = true
+      fullscreen = 1
     }
 
     # Workspace assigns

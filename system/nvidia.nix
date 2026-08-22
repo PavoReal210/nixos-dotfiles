@@ -1,6 +1,6 @@
 # system/nvidia.nix
 # NVIDIA RTX 4060 (Ada Lovelace) — Wayland/Hyprland optimized
-{pkgs, ...}: {
+{ pkgs, ... }: {
   # ── Graphics stack ───────────────────────────────────────────────────────────
 
   hardware.graphics = {
@@ -10,7 +10,7 @@
 
   # ── NVIDIA driver ────────────────────────────────────────────────────────────
 
-  services.xserver.videoDrivers = ["nvidia"];
+  services.xserver.videoDrivers = [ "nvidia" ];
 
   hardware.nvidia = {
     modesetting.enable = true;
@@ -42,6 +42,12 @@
     "nvidia-drm.modeset=1"
     "nvidia-drm.fbdev=1"
   ];
+
+  # Tells the driver to save the VRAM contents to system RAM before sleep
+  # Work around is necessaru becasue nvidia-sleep.sh isn't part of the CatchyOS driver
+  boot.extraModprobeConfig = ''
+    options nvidia NVreg_PreserveVideoMemoryAllocations=1 NVreg_TemporaryFilePath=/var/tmp
+  '';
 
   # ── Wayland environment variables ────────────────────────────────────────────
 

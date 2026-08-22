@@ -1,7 +1,6 @@
 # home-manager/utilities/vscode.nix
-# VSCode configuration with Stylix theming
+# VSCode configuration with a standalone (non-Stylix) theme
 {
-  config,
   lib,
   pkgs,
   ...
@@ -33,6 +32,9 @@ in
       extensions =
         with pkgs.vscode-extensions;
         [
+          # Theme
+          catppuccin.catppuccin-vsc
+
           # Nix
           jnoortheen.nix-ide
           mkhl.direnv
@@ -77,8 +79,8 @@ in
         ++ [ ellsp ];
 
       userSettings = {
-        # Theme — Stylix automatically creates and applies "Stylix" theme
-        "workbench.colorTheme" = "Stylix";
+        # Theme — Catppuccin Mocha, set explicitly instead of Stylix's generated theme
+        "workbench.colorTheme" = "Catppuccin Mocha";
 
         # Window
         "window.newWindowDimensions" = "default";
@@ -86,9 +88,9 @@ in
 
         "security.workspace.trust.untrustedFiles" = "open";
 
-        # Editor - use Stylix font
-        "editor.fontFamily" = lib.mkForce "'${config.utils.fonts.primary.family}'";
-        "editor.fontSize" = lib.mkForce 14;
+        # Editor — font set directly instead of via Stylix's font option
+        "editor.fontFamily" = "'Terminess Nerd Font Mono'";
+        "editor.fontSize" = 14;
         "editor.formatOnSave" = true;
         "editor.minimap.enabled" = false;
         "editor.renderWhitespace" = "boundary";

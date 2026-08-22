@@ -45,80 +45,90 @@
       url = "github:railgun210/pia.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    winapps = {
+      url = "github:winapps-org/winapps";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = {
-    self,
-    nixpkgs,
-    nixpkgs-unstable,
-    home-manager,
-    lanzaboote,
-    sops-nix,
-    stylix,
-    cozette,
-    buuf-icon-theme,
-    hm-ricing-mode,
-    nix-doom-emacs-unstraightened,
-    chaotic,
-    pia,
-    ...
-  } @ inputs: let
-    system = "x86_64-linux";
+  outputs =
+    {
+      self,
+      nixpkgs,
+      nixpkgs-unstable,
+      home-manager,
+      lanzaboote,
+      sops-nix,
+      stylix,
+      cozette,
+      buuf-icon-theme,
+      hm-ricing-mode,
+      nix-doom-emacs-unstraightened,
+      chaotic,
+      pia,
+      winapps,
+      ...
+    }@inputs:
+    let
+      system = "x86_64-linux";
 
-    overlay-unstable = final: prev: {
-      unstable = import nixpkgs-unstable {
-        inherit system;
-        config.allowUnfree = true;
-      };
-    };
-
-    # Hyprland 0.56.x requires Glaze 7.x, while the current nixpkgs input
-    # provides Glaze 8.x. Keep the compatibility fix local to Hyprland.
-    hyprland-glaze-compat = final: prev: let
-      glaze7 = prev.glaze.overrideAttrs (_: {
-        version = "7.9.1";
-        src = prev.fetchFromGitHub {
-          owner = "stephenberry";
-          repo = "glaze";
-          tag = "v7.9.1";
-          hash = "sha256-NRRq5MGF2f5PW0teYnq58ELzson+U6KHVPaY6r30KLA=";
+      overlay-unstable = final: prev: {
+        unstable = import nixpkgs-unstable {
+          inherit system;
+          config.allowUnfree = true;
         };
-      });
-    in {
-      inherit glaze7;
-      hyprland = prev.hyprland.override {glaze = glaze7;};
-    };
+      };
 
-    # These overlays are shared by NixOS and the integrated Home Manager
-    # configuration because both now evaluate against the same pkgs set.
-    sharedOverlays = [
-      overlay-unstable
-      hyprland-glaze-compat
-      (final: prev: {
-        ananicy-cpp = prev.ananicy-cpp.overrideAttrs (old: {
-          postPatch = (old.postPatch or "") + ''
-            sed -i '1i#include <cstdint>' src/platform/linux/backtrace.cpp
-            sed -i '1i#include <cstring>' src/utility/argument_parsing/argument.cpp
-            sed -i '1i#include <cstring>' src/platform/linux/singleton_process.cpp
-          '';
-        });
-      })
-      nix-doom-emacs-unstraightened.overlays.default
-      (final: prev: {cozette = inputs.cozette.packages.${system}.default;})
-      (final: prev: {
-        buuf-icon-theme = inputs.buuf-icon-theme.packages.${system}.default;
-      })
-      (final: prev: {pia = inputs.pia.packages.${system}.pia;})
-    ];
-  in {
-    formatter.${system} = nixpkgs.legacyPackages.${system}.alejandra;
+      # Hyprland 0.56.x requires Glaze 7.x, while the current nixpkgs input
+      # provides Glaze 8.x. Keep the compatibility fix local to Hyprland.
+      hyprland-glaze-compat =
+        final: prev:
+        let
+          glaze7 = prev.glaze.overrideAttrs (_: {
+            version = "7.9.1";
+            src = prev.fetchFromGitHub {
+              owner = "stephenberry";
+              repo = "glaze";
+              tag = "v7.9.1";
+              hash = "sha256-NRRq5MGF2f5PW0teYnq58ELzson+U6KHVPaY6r30KLA=";
+            };
+          });
+        in
+        {
+          inherit glaze7;
+          hyprland = prev.hyprland.override { glaze = glaze7; };
+        };
 
-    nixosConfigurations = {
-      railgun = nixpkgs.lib.nixosSystem {
-        specialArgs = {inherit inputs;};
-        modules = [
-          (
-            {...}: {
+      # These overlays are shared by NixOS and the integrated Home Manager
+      # configuration because both now evaluate against the same pkgs set.
+      sharedOverlays = [
+        overlay-unstable
+        hyprland-glaze-compat
+        (final: prev: {
+          ananicy-cpp = prev.ananicy-cpp.overrideAttrs (old: {
+            postPatch = (old.postPatch or "") + ''
+              sed -i '1i#include <cstdint>' src/platform/linux/backtrace.cpp
+              sed -i '1i#include <cstring>' src/utility/argument_parsing/argument.cpp
+              sed -i '1i#include <cstring>' src/platform/linux/singleton_process.cpp
+            '';
+          });
+        })
+        nix-doom-emacs-unstraightened.overlays.default
+        (final: prev: { cozette = inputs.cozette.packages.${system}.default; })
+        (final: prev: {
+          buuf-icon-theme = inputs.buuf-icon-theme.packages.${system}.default;
+        })
+        (final: prev: { pia = inputs.pia.packages.${system}.pia; })
+      ];
+    in
+    {
+      formatter.${system} = nixpkgs.legacyPackages.${system}.alejandra;
+
+      nixosConfigurations = {
+        railgun = nixpkgs.lib.nixosSystem {
+          specialArgs = { inherit inputs; };
+          modules = [
+            ({ ... }: {
               # NixOS and Home Manager intentionally share this package set.
               nixpkgs.overlays = sharedOverlays;
 
@@ -127,7 +137,7 @@
               home-manager = {
                 useGlobalPkgs = true;
                 useUserPackages = true;
-                extraSpecialArgs = {inherit inputs;};
+                extraSpecialArgs = { inherit inputs; };
                 users.railgun = {
                   imports = [
                     nix-doom-emacs-unstraightened.homeModule
@@ -137,19 +147,18 @@
                   ];
                 };
               };
-            }
-          )
-          ./system/configuration.nix
-          home-manager.nixosModules.home-manager
-          pia.nixosModules.default
-          lanzaboote.nixosModules.lanzaboote
-          sops-nix.nixosModules.sops
-          stylix.nixosModules.stylix
-          chaotic.nixosModules.nyx-cache
-          chaotic.nixosModules.nyx-overlay
-          chaotic.nixosModules.nyx-registry
-        ];
+            })
+            ./system/configuration.nix
+            home-manager.nixosModules.home-manager
+            pia.nixosModules.default
+            lanzaboote.nixosModules.lanzaboote
+            sops-nix.nixosModules.sops
+            stylix.nixosModules.stylix
+            chaotic.nixosModules.nyx-cache
+            chaotic.nixosModules.nyx-overlay
+            chaotic.nixosModules.nyx-registry
+          ];
+        };
       };
     };
-  };
 }

@@ -1,6 +1,6 @@
 # system/configuration.nix
 # Main NixOS system configuration
-{...}: {
+{ ... }: {
   imports = [
     ./ananicy.nix
     ./audio.nix
@@ -26,7 +26,9 @@
     ./stylix.nix
     ./suspend.nix
     ./users.nix
+    ./virtualisation.nix
     ./vpn.nix
+    ./winapps.nix
     ./zram.nix
   ];
 

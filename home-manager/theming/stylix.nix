@@ -2,7 +2,8 @@
   pkgs,
   osConfig,
   ...
-}: {
+}:
+{
   config = {
     stylix = {
       enable = true;
@@ -54,7 +55,7 @@
         kitty.enable = true;
         alacritty.enable = true;
 
-        vscode.enable = true;
+        vscode.enable = false;
         neovide.enable = true;
         anki.enable = true;
 

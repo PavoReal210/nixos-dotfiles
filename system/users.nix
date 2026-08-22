@@ -12,6 +12,8 @@
       "networkmanager"
       "wheel"
       "railgun"
+      "libvirtd"
+      "kvm"
     ];
     shell = pkgs.zsh;
   };
