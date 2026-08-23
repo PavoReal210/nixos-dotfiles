@@ -10,7 +10,7 @@
     };
   };
 
-  # virt-manager for building/managing the VM; freerdp is winapps' RDP backend
+  # virt-manager for building/managing the VM; FreeRDP 3 is WinApps' RDP backend
   environment.systemPackages = with pkgs; [
     virt-manager
     freerdp

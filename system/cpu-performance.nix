@@ -4,12 +4,11 @@
 # Note:
 # If you're not using the exact same processor as me, you can probably delete this entire file
 # Or just use it for reference to configure your device. But don't just blindly copy it.
-# Configured for maximum CPU performance with no power-saving features.
+# Configured for responsive desktop and VM performance while retaining normal
+# idle power management.
 # - performance governor: EPP hints from the kernel tell amd_pstate to request the
 #   highest frequency possible across all cores, minimizing any latency due to
 #   frequency transitions.
-# - processor.max_cstate=1 prevents C2, C3, and higher sleep states that could
-#   cause wake-up latency spikes on idle cores.
 # - cppc_prefctrl=1 enables platform-level preferred core support, letting the
 #   hardware schedule to the fastest P-cores in a power-aware way.
 # - amd_pstate is in active mode, which lets hardware directly control frequency
@@ -39,18 +38,6 @@ in {
     # boost when single core is loaded.
     "amd_pstate.cppc_prefctrl=1"
 
-    # Limit the maximum C-state to C1. This prevents the CPU from entering deeper
-    # sleep states (C2, C3, etc.) which have a noticable wake-up latency. Keeping
-    # cores in C1 instead of C6 eliminates that latency at the cost of higher
-    # idle power consumption.
-    "processor.max_cstate=1"
-
-    # Prevent PCIe Active State Power Management from fighting the MT7921e
-    # WiFi/BT chip.
-    "pcie_aspm=off"
-
-    # Disable the legacy ACPI CPU frequency driver so amd-pstate wins cleanly.
-    "initcall_blacklist=acpi_cpufreq_init"
   ];
 
   # ── CPU frequency governor ─────────────────────────────────────────────────────

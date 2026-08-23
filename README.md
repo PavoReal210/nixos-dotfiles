@@ -15,6 +15,7 @@ This flake manages:
 - **Notifications**: Dunst
 - **Secrets**: SOPS-nix for WiFi passwords, SSH keys, and other secrets
 - **Gaming**: Gamescope, Gamemode, Lutris, Heroic, MangoHud, RetroArch (with RetroAchievements)
+- **Virtualization**: libvirt/KVM with QEMU, TPM 2.0, Virt-Manager, and WinApps
 
 ## Desktop
 
@@ -88,9 +89,11 @@ nixos-dotfiles/
 │   ├── cpu-performance.nix         # amd_pstate=active, EPP lock, resume hook + k10temp
 │   ├── zram.nix                    # Compressed RAM swap (memoryPercent=50)
 │   ├── ananicy.nix                 # ananicy-cpp automatic nice-level daemon
-│   ├── scheduler.nix               # CachyOS kernel + scx_rustland scheduler
+│   ├── scheduler.nix               # nixpkgs kernel + scx_rustland scheduler
 │   ├── suspend.nix                 # NVIDIA/Hyprland + scx suspend-resume robustness
 │   ├── users.nix                   # User account + zsh
+│   ├── virtualisation.nix          # libvirt/KVM, QEMU, TPM, Virt-Manager, FreeRDP
+│   ├── winapps.nix                 # WinApps and WinApps Launcher packages
 │   ├── doas.nix                    # doas (sudo replacement) for pia
 │   ├── secrets.nix                 # SOPS age keyfile + permissions
 │   ├── vpn.nix                     # PIA VPN (WireGuard) + SOPS
@@ -130,7 +133,8 @@ nixos-dotfiles/
 └── docs/                           # Documentation
     ├── devshells.md                # Development shell usage
     ├── secrets.md                  # SOPS secrets setup
-    └── base16-reference.md         # Base16 color palette reference
+    ├── base16-reference.md         # Base16 color palette reference
+    └── virtualisation-winapps.md   # Windows VM and WinApps setup
 ```
 
 ## Editors
@@ -164,7 +168,10 @@ image = osConfig.stylix.image;
 
 Colors are applied to:
 - Hyprland, Waybar, Bemenu, Hyprlock
-- GTK, Qt, Ghostty, Kitty, Firefox, VSCode, Anki
+- GTK, Qt, Ghostty, Kitty, Firefox, Anki
+
+VSCode is intentionally excluded from Stylix and uses the explicitly pinned
+Turbo C 3.0 theme described in the [virtualization and WinApps guide](docs/virtualisation-winapps.md).
 
 The same Stylix wallpaper is used by Hyprlock and the ReGreet login screen (greetd), so the desktop, lockscreen, and login screen all match. The wallpaper path is declared once in `system/stylix.nix`; integrated Home Manager Stylix inherits it from the surrounding NixOS configuration through `osConfig.stylix.image`.
 
@@ -173,6 +180,21 @@ GTK widgets are themed by Stylix's built-in GTK target (no custom theme derivati
 Fonts are managed at system level (`system/fonts.nix`) with Stylix font preferences set in `theming/stylix.nix` and `theming/font-settings.nix`. Primary fonts: Terminess Nerd Font Mono (monospace), Overpass (sans), Cozette (status bars), Symbols Nerd Font Mono, Weather Icons.
 
 See [docs/base16-reference.md](docs/base16-reference.md) for the full color slot reference.
+
+## Virtualization and WinApps
+
+The system enables libvirt/KVM through `system/virtualisation.nix` and installs
+QEMU-KVM, TPM 2.0 support, Virt-Manager, SPICE tools, and FreeRDP 3. WinApps
+and its optional launcher are installed from the pinned WinApps flake input in
+`system/winapps.nix`.
+
+This host uses an AMD Ryzen 7 5800X with AMD-V/SVM, nested paging, IOMMU, and
+active KVM acceleration. The configuration keeps AMD P-State performance
+handling while allowing normal CPU idle states and PCIe power management.
+
+The Nix configuration does not create a Windows VM or store Windows credentials.
+Create the VM in Virt-Manager, configure Windows RDP, and create the per-user
+WinApps configuration as described in the [virtualization and WinApps guide](docs/virtualisation-winapps.md).
 
 ## Gaming
 
@@ -269,6 +291,7 @@ Secrets include WiFi, PIA VPN, and the RetroAchievements credentials (`retroachi
 | [docs/secrets.md](docs/secrets.md) | SOPS secrets setup and management |
 | [docs/base16-reference.md](docs/base16-reference.md) | Base16 color palette slot reference |
 | [docs/hyprland-animations.md](docs/hyprland-animations.md) | Hyprland animation system, bezier curves, and styles |
+| [docs/virtualisation-winapps.md](docs/virtualisation-winapps.md) | Windows VM, libvirt, Microsoft account, RDP, and WinApps setup |
 
 ## Notes
 
