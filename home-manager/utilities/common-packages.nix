@@ -1,9 +1,9 @@
 # home-manager/utilities/common-packages.nix
 # Common user packages
-{pkgs, ...}: {
+{ pkgs, ... }: {
   home.packages = with pkgs; [
     # GUI Applications
-    (pidgin.override {plugins = [pidginPackages.purple-discord];}) # Discord via Pidgin (no Electron)
+    (pidgin.override { plugins = [ pidginPackages.purple-discord ]; }) # Discord via Pidgin (no Electron)
     gimp # Image editing
     krita # Digital painting
     xournalpp # Handwritten notes and Org-mode figures
@@ -18,6 +18,7 @@
     font-manager # Manually select bitmaps for special fonts
     maestral # FOSS Dropbox CLI
     maestral-gui # FOSS Dropbox client
+    todoist-electron # Our favorite todo list app
 
     cpu-x # CPU info
 
@@ -55,5 +56,5 @@
   # Default file manager for directories (xdg-open): Thunar is enabled
   # system-wide in system/file-management.nix via programs.thunar.
   xdg.mimeApps.enable = true;
-  xdg.mimeApps.defaultApplications."inode/directory" = ["thunar.desktop"];
+  xdg.mimeApps.defaultApplications."inode/directory" = [ "thunar.desktop" ];
 }

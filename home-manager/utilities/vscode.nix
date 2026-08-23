@@ -12,6 +12,13 @@ let
     version = "0.1.3";
     hash = "sha256-u2gvNxDQJLIWIKF+HhyqQJVfTAZFvzHlwno7wqNXwhA=";
   };
+
+  turbo-c-theme = pkgs.vscode-utils.extensionFromVscodeMarketplace {
+    name = "turboc-3-0-theme";
+    publisher = "WatkinsLabs";
+    version = "0.0.1";
+    hash = "sha256-cjQxQr1Yt1twcuTFpQ6ZPDrC4mLGLa+inCnH36dPGm8=";
+  };
 in
 {
   # Force VS Code (and all Electron apps) to use the native Wayland backend
@@ -32,8 +39,7 @@ in
       extensions =
         with pkgs.vscode-extensions;
         [
-          # Theme
-          catppuccin.catppuccin-vsc
+           # Theme
 
           # Nix
           jnoortheen.nix-ide
@@ -76,11 +82,11 @@ in
           njpwerner.autodocstring
           shd101wyy.markdown-preview-enhanced
         ]
-        ++ [ ellsp ];
+         ++ [ ellsp turbo-c-theme ];
 
       userSettings = {
-        # Theme — Catppuccin Mocha, set explicitly instead of Stylix's generated theme
-        "workbench.colorTheme" = "Catppuccin Mocha";
+         # Theme — Turbo C 3.0, set explicitly instead of Stylix's generated theme
+         "workbench.colorTheme" = "Turbo C 3.0 Theme";
 
         # Window
         "window.newWindowDimensions" = "default";
@@ -90,7 +96,7 @@ in
 
         # Editor — font set directly instead of via Stylix's font option
         "editor.fontFamily" = "'Terminess Nerd Font Mono'";
-        "editor.fontSize" = 14;
+        "editor.fontSize" = 16;
         "editor.formatOnSave" = true;
         "editor.minimap.enabled" = false;
         "editor.renderWhitespace" = "boundary";

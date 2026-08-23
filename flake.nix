@@ -126,7 +126,7 @@
 
       nixosConfigurations = {
         railgun = nixpkgs.lib.nixosSystem {
-          specialArgs = { inherit inputs; };
+          specialArgs = { inherit inputs system; };
           modules = [
             ({ ... }: {
               # NixOS and Home Manager intentionally share this package set.

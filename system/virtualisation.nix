@@ -7,17 +7,13 @@
     qemu = {
       package = pkgs.qemu_kvm;
       swtpm.enable = true; # TPM 2.0 emulation — required by Windows 11
-      ovmf = {
-        enable = true; # UEFI firmware — also required by Windows 11
-        packages = [ pkgs.OVMFFull.fd ];
-      };
     };
   };
 
   # virt-manager for building/managing the VM; freerdp is winapps' RDP backend
   environment.systemPackages = with pkgs; [
     virt-manager
-    freerdp3
+    freerdp
     spice-gtk
   ];
 

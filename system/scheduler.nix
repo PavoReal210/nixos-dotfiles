@@ -1,10 +1,9 @@
 # system/scheduler.nix
-# CPU scheduler: CachyOS kernel + sched-ext (scx) userspace scheduler
+# CPU scheduler: sched-ext (scx) userspace scheduler
 {pkgs, ...}: {
   # ── Kernel ───────────────────────────────────────────────────────────────────
-  # CachyOS kernel: a performance-tuned kernel with extra scheduling patches,
-  # built against the CachyOS branch of nixpkgs (hardened BORE scheduler, etc.).
-  boot.kernelPackages = pkgs.linuxPackages_cachyos;
+  # Use the nixpkgs kernel package set so its NVIDIA module stays store-pure.
+  boot.kernelPackages = pkgs.linuxPackages;
 
   # ── sched-ext scheduler ───────────────────────────────────────────────────────
   # sched-ext: use scx_rustland. scx_rusty 1.1.2 hits an intermittent BPF
