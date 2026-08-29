@@ -15,7 +15,15 @@
     vlc # Media player
     strawberry # Music player
     qbittorrent # Torrent client
-    font-manager # Manually select bitmaps for special fonts
+    # font-manager 0.9.4 fails to compile with vala 0.56.19 (nixpkgs 26.11):
+    # the gtk4 vapi declares Gtk.DragIcon.get_for_drag as a creation method,
+    # so its call sites need the `new` operator. Not yet fixed upstream.
+    (font-manager.overrideAttrs (old: {
+      patches = (old.patches or [ ]) ++ [
+        ./patches/font-manager-0.9.4-dragicon-new.patch
+      ];
+    }))
+    # Manually select bitmaps for special fonts
     maestral # FOSS Dropbox CLI
     maestral-gui # FOSS Dropbox client
     todoist-electron # Our favorite todo list app

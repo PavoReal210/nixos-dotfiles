@@ -28,6 +28,12 @@ let
     '';
   };
 
+  # "Image Occlusion Enhanced" (ankiweb id 1374772155) is packaged upstream in
+  # nixpkgs as pkgs.ankiAddons.image-occlusion-enhanced (v1.4.0, fetched from
+  # GitHub). The ankiweb download endpoint returns a file without a .zip
+  # extension, which buildAnkiAddon's default unpackPhase cannot unpack, so the
+  # upstream package is used instead of a hand-rolled fetchurl build.
+
   # The current nixpkgs Anki package exports workspace development dependencies
   # even for its root project. That project has no runtime dependencies, so
   # skip its export and keep only the qt/pylib production dependency exports.
@@ -63,6 +69,7 @@ in
     package = anki;
     addons = [
       multi-line-type-answer-box
+      pkgs.ankiAddons.image-occlusion-enhanced
     ];
     profiles."User 1".sync = {
       usernameFile = config.sops.secrets.anki-username.path;

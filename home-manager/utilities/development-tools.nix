@@ -34,6 +34,7 @@
     tmux # Terminal multiplexer
     direnv # Per-directory environment
     opencode # Code editor for vibing-out
+    claude-code # Anthropic's Claude Code CLI
 
     # Documentation
     texliveFull # LaTeX
