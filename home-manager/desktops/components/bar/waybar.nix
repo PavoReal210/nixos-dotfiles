@@ -62,7 +62,6 @@ in {
           "bluetooth"
           "network"
           "pulseaudio"
-          "idle_inhibitor"
           "custom/system-temps"
           "custom/weather"
           "clock"
@@ -212,14 +211,6 @@ in {
           scroll-step = 5;
         };
 
-        "idle_inhibitor" = {
-          format = "{icon}";
-          format-icons = {
-            activated = "<span foreground='${dim}'>idle</span> <span foreground='${accent}'>on</span>";
-            deactivated = "<span foreground='${dim}'>idle</span> <span foreground='${accent}'>off</span>";
-          };
-        };
-
         "tray" = {
           icon-size = 18;
           spacing = 5;
@@ -313,7 +304,6 @@ in {
       #network,
       #bluetooth,
       #pulseaudio,
-      #idle_inhibitor,
       #tray {
         padding: 0 8px;
         margin: 0 2px;
@@ -321,14 +311,6 @@ in {
 
       #tray {
         padding-top: 3px;
-      }
-
-      #idle_inhibitor.deactivated {
-        opacity: 0.5;
-      }
-
-      #idle_inhibitor.activated {
-        opacity: 1;
       }
 
       #custom-pia-status {
