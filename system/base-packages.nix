@@ -16,7 +16,7 @@
     ntfs3g
 
     # LaTeX rendering (needed by Anki for traditional [latex]...[/latex] cards)
-    dvipng
+    (texlive.combine { inherit (texlive) dvipng; })
 
     # Text editors
     vim
