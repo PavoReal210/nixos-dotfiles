@@ -51,7 +51,7 @@
 
     # System tools
     gparted
-    hyprpolkitagent # Polkit auth agent (lets pkexec apps like gparted prompt for password)
+    # hyprpolkitagent is launched by exec-once in hyprland/exec-once.nix — no need to also put it on PATH
   ];
 
   # Default file manager for directories (xdg-open): Thunar is enabled

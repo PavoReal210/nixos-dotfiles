@@ -1,88 +1,135 @@
 # Secrets Management (SOPS)
 
-SOPS (Secrets OPerationS) is used for managing encrypted secrets in this configuration. Secrets are stored as age-encrypted YAML files in `system/secrets/`.
+## The problem
 
-## Prerequisites
+Nix configs live on GitHub. You can't put your WiFi password, SSH keys, or API tokens in a `.nix` file and push it — that's just publishing your credentials to the internet.
 
-1. Install SOPS:
-   ```bash
-   nix shell nixpkgs#sops
-   ```
+SOPS (Secrets OPerationS) solves this: secrets are stored as an encrypted file (`secrets.yaml`) that's safe to commit. Only a machine with the right key can decrypt it. At rebuild time, NixOS decrypts the file and injects the values where they're needed — they never land in the Nix store in plaintext.
 
-2. Generate an age key for editing secrets (if you don't have one):
-   ```bash
-   mkdir -p ~/.config/sops/age/
-   nix shell nixpkgs#age -c age-keygen -o ~/.config/sops/age/keys.txt
-   ```
+This config uses **age** for encryption. Age is simpler than GPG: one key file, no keyring daemon, no web of trust. Your key is at `~/.config/sops/age/keys.txt` for editing, and `/etc/sops/age/keys.txt` for system activation.
 
-3. Provision the same key for system services at `/etc/sops/age/keys.txt`
-   during installation. Both system and Home Manager activation use that path.
-   This configuration intentionally makes that file readable by the local user.
+---
 
-## Adding WiFi to SOPS (after initial setup)
+## What's stored in secrets
 
-1. Enter the dotfiles directory:
-   ```bash
-   cd ~/GitRepos/nixos-dotfiles
-   ```
+| File | What's in it |
+|------|-------------|
+| `system/secrets/secrets.yaml` | WiFi credentials, PIA VPN config, RetroAchievements login |
+| `system/secrets/github-ssh-key.age` | GitHub SSH private key |
+| `system/secrets/github-ssh-key.pub` | GitHub SSH public key |
+| `system/secrets/pia.age` | PIA VPN WireGuard config |
+| `system/secrets/weather-api-key.age` | Weather API key for the Waybar module |
 
-2. Edit the secrets:
-   ```bash
-   sops system/secrets/secrets.yaml
-   ```
+---
 
-3. Add your WiFi credentials:
-   ```yaml
-   wifi:
-       ssid: "YourNetworkName"
-       psk: "YourPassword"
-   ssh_key: |
-     -----BEGIN OPENSSH PRIVATE KEY-----
-     your-private-key-here
-     -----END OPENSSH PRIVATE KEY-----
-   ```
+## Fresh machine setup
 
-4. Encrypt your SSH keys:
-   ```bash
-   sops --encrypt --age <your-public-age-key> ~/.ssh/github.pub > system/secrets/github-ssh-key.pub
-   ```
+If you're setting up this config on a new machine, you need an age key before secrets will decrypt.
 
-5. Save and exit. The file will be encrypted automatically.
+**Step 1 — Generate a new age key**
 
-## After updating secrets
-
-Rebuild your system. See [README Rebuilding](../README.md#rebuilding) for instructions.
-
-## Useful Tips
-
-### Setting an Editor
-
-Use vim as the SOPS editor:
 ```bash
-EDITOR=vim sops system/secrets/secrets.yaml
+mkdir -p ~/.config/sops/age/
+nix shell nixpkgs#age -c age-keygen -o ~/.config/sops/age/keys.txt
 ```
+
+This creates a key file with a private key (keep it secret) and prints your public key to the terminal. Save that public key — you'll need it.
+
+**Step 2 — Copy the key for system services**
+
+SOPS needs the key at `/etc/sops/age/keys.txt` so system-level activation scripts can also decrypt secrets:
+
+```bash
+sudo mkdir -p /etc/sops/age
+sudo cp ~/.config/sops/age/keys.txt /etc/sops/age/keys.txt
+sudo chmod 600 /etc/sops/age/keys.txt
+```
+
+**Step 3 — Add your public key to `.sops.yaml`**
+
+Open `.sops.yaml` at the repo root and add your public key to the `age:` list. This tells SOPS which keys can decrypt these secrets. Without this, you'll get "no key found" errors.
+
+**Step 4 — Re-encrypt secrets with your new key**
+
+If you're taking over someone else's config, you need to re-encrypt `secrets.yaml` with your key:
+
+```bash
+cd ~/GitRepos/nixos-dotfiles
+sops updatekeys system/secrets/secrets.yaml
+```
+
+**Step 5 — Rebuild**
+
+```bash
+nh os switch
+```
+
+---
+
+## Editing secrets
+
+```bash
+cd ~/GitRepos/nixos-dotfiles
+sops system/secrets/secrets.yaml
+```
+
+SOPS decrypts the file into your editor, you make changes, you save — SOPS re-encrypts automatically on write. Set `EDITOR` first if you want a specific editor:
+
+```bash
+export EDITOR="emacsclient -a ''"
+sops system/secrets/secrets.yaml
+```
+
+---
+
+## Adding WiFi credentials
+
+Open `secrets.yaml` and add under `wifi:`:
+
+```yaml
+wifi:
+  ssid: "YourNetworkName"
+  psk: "YourPassword"
+```
+
+Then rebuild. NetworkManager picks up the credentials at activation.
+
+---
 
 ## Adding RetroAchievements credentials
 
-RetroArch's RetroAchievements login is stored in `retroachievements-username` / `retroachievements-password`:
+RetroArch's login is seeded from secrets at activation — credentials never land in the Nix store:
 
-1. Edit the secrets:
-   ```bash
-   sops system/secrets/secrets.yaml
-   ```
-2. Add the two keys:
-   ```yaml
-   retroachievements-username: "your_username"
-   retroachievements-password: "your_password"
-   ```
-3. Rebuild home (`nh home switch`). The values are seeded into `~/.config/retroarch/retroarch.cfg` at activation, never into the nix store.
+```bash
+sops system/secrets/secrets.yaml
+```
 
-## Encrypted Files
+Add:
+```yaml
+retroachievements-username: "your_username"
+retroachievements-password: "your_password"
+```
 
-| File | Purpose |
-|------|---------|
-| `secrets.yaml` | Main secrets (WiFi, PIA VPN, RetroAchievements) |
-| `github-ssh-key.age` | GitHub SSH private key |
-| `github-ssh-key.pub` | GitHub SSH public key (encrypted with age) |
-| `pia.age` | PIA VPN configuration |
-| `weather-api-key.age` | Weather API key for waybar module |
+Rebuild with `nh os switch`. The values are written to `~/.config/retroarch/retroarch.cfg` during activation.
+
+---
+
+## Adding an SSH key
+
+Encrypt your private key with age and store it:
+
+```bash
+sops --encrypt --age <your-public-age-key> ~/.ssh/github > system/secrets/github-ssh-key.age
+```
+
+The `ssh.nix` module in home-manager then symlinks it into place at activation. The private key itself is never in the Nix store.
+
+---
+
+## After any secrets change
+
+```bash
+nh os switch
+```
+
+That's it. The rebuild activates the new secrets automatically.

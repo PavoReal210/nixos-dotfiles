@@ -1,178 +1,155 @@
 # Virtualization and WinApps
 
-This guide explains how this NixOS configuration provides a Windows 11 VM
-through libvirt/KVM and how to expose Windows applications through WinApps.
-The host configuration is declarative, but the Windows guest, its disk image,
-RDP credentials, and Microsoft account remain outside the Nix store.
+## What this does
 
-## 1. What the configuration provides
+WinApps lets individual Windows apps — Word, Outlook, Photoshop, whatever — appear as normal windows on your Linux desktop. They show up in your app launcher, open from keybindings, and sit in your taskbar just like any native app. Under the hood they're running in a headless Windows 11 VM over RDP.
 
-| File | Purpose |
-| --- | --- |
-| `system/virtualisation.nix` | Enables libvirt/KVM, QEMU-KVM, TPM 2.0, Virt-Manager, SPICE, and FreeRDP |
-| `system/winapps.nix` | Installs WinApps, the optional launcher, and setup utilities |
-| `system/users.nix` | Adds the user to the `libvirtd` and `kvm` groups |
-| `flake.nix` | Pins the WinApps flake input |
+### Why this setup instead of alternatives?
 
-Apply the host configuration first:
+**Why not just open the VM in a window?** You could, but then you're staring at a Windows desktop inside a window. WinApps makes each app feel native — no Windows taskbar, no VM window border, just the app.
+
+**Why not GPU passthrough?** GPU passthrough gives the VM direct GPU access for gaming or GPU-accelerated work, but it requires *two* GPUs — one for the host, one for the VM. This machine only has the RTX 4060, which the Linux host needs. WinApps doesn't need GPU passthrough; it uses Windows RDP for display, which is fast enough for office apps.
+
+**Why not WINE?** WINE works great for many apps but breaks on anything that checks for Windows authenticity, requires specific Windows APIs, or just hasn't been tested. A real Windows VM works with anything.
+
+> **Important:** This only works with **Windows Pro, Enterprise, or Education**. Windows Home does not support incoming RDP connections, so WinApps won't work with it. You need a Pro license (or higher).
+
+---
+
+## What the Nix config sets up
+
+| File | What it does |
+|------|-------------|
+| `system/virtualisation.nix` | Enables libvirt/KVM, QEMU-KVM, TPM 2.0, Virt-Manager, SPICE, FreeRDP |
+| `system/winapps.nix` | Installs WinApps and its launcher |
+| `system/users.nix` | Adds your user to the `libvirtd` and `kvm` groups |
+| `flake.nix` | Pins the WinApps flake input to a known-good version |
+
+The Nix config does NOT create the Windows VM, download Windows, or store any Windows credentials. You do that part yourself.
+
+Apply the config first:
 
 ```bash
-cd ~/GitRepos/nixos-dotfiles
-sudo nixos-rebuild switch --flake .#railgun
+nh os switch
 ```
 
-Log out and back in after the first activation if the `libvirtd` or `kvm`
-group membership is not visible in the current session. Confirm the host:
+Then log out and back in so the group membership takes effect. Verify everything looks right:
 
 ```bash
-groups
-ls -l /dev/kvm
-virt-host-validate qemu
-virsh -c qemu:///system list --all
-xfreerdp3 --version
+groups                              # should include libvirtd and kvm
+ls -l /dev/kvm                      # should exist
+virt-host-validate qemu             # should all pass
+virsh -c qemu:///system list --all  # should connect without errors
+xfreerdp3 --version                 # should print a version number
 ```
 
-## 2. Host hardware and performance
+---
 
-This machine has an AMD Ryzen 7 5800X with 8 cores and 16 threads. AMD-V/SVM,
-nested paging, and IOMMU are available, and the running kernel has KVM's AMD
-module loaded.
+## Step 1 — Get a Windows 11 ISO
 
-The configuration uses QEMU-KVM, TPM 2.0 support, AMD P-State active mode, the
-performance governor, and full kernel preemption. It keeps normal CPU idle
-states and PCIe power management instead of disabling them for small and
-usually unmeasurable latency gains.
-
-The RTX 4060 is used by the Linux host. GPU passthrough is technically
-possible, but would require another usable host GPU or a graphical hostless
-setup. WinApps normally uses Windows RDP and does not require GPU passthrough.
-Hugepages and CPU pinning are also intentionally not forced globally; add them
-only after measuring a VM-specific bottleneck.
-
-## 3. Obtain Windows installation media
-
-Download a Windows 11 ISO from Microsoft's official page:
+Download from Microsoft's official page:
 
 <https://www.microsoft.com/software-download/windows11>
 
-Use an ISO matching the edition you are licensed to use. A VM still needs a
-valid Windows license. Signing in with a Microsoft account does not itself
-create a license or guarantee activation in a new virtual machine.
+Make sure you download a Pro, Enterprise, or Education edition — not Home.
 
-Keep the ISO somewhere readable by Virt-Manager, for example:
+Move it somewhere Virt-Manager can access:
 
 ```bash
 mkdir -p ~/VirtualMachines/iso
 mv ~/Downloads/Win11*.iso ~/VirtualMachines/iso/windows-11.iso
 ```
 
-If Virt-Manager cannot access the file from your home directory, copy it to
-`/var/lib/libvirt/images/` instead.
+If Virt-Manager can't access files from your home directory, put it in `/var/lib/libvirt/images/` instead.
 
-## 4. Create the Windows VM
+---
 
-Open Virt-Manager and connect to **QEMU/KVM system**. Do not use the `session`
-connection; WinApps uses `qemu:///system`.
+## Step 2 — Create the Windows VM
 
-Choose **Create a new virtual machine**:
+Open Virt-Manager and connect to **QEMU/KVM system** (not the session connection — WinApps uses `qemu:///system`).
 
-1. Select **Local install media (ISO image or CDROM)**.
-2. Select the Windows 11 ISO.
-3. Choose **Microsoft Windows 11** when available.
-4. Allocate 12 to 16 GiB of RAM. The host has 32 GiB.
-5. Start with 6 vCPUs. Use 8 only if the workload needs it.
-6. Create a qcow2 disk of at least 80 GiB on fast local storage.
-7. Enable **Customize configuration before install**.
+Click **Create a new virtual machine** and go through the wizard:
 
-Verify these settings before starting installation:
+1. Select **Local install media (ISO image or CDROM)** → pick the Windows 11 ISO
+2. Choose **Microsoft Windows 11** as the OS type
+3. Allocate **12–16 GiB of RAM** (the host has 32 GiB)
+4. Allocate **6 vCPUs** to start (go to 8 only if you notice it being a bottleneck)
+5. Create a **qcow2 disk of at least 80 GiB** on local SSD storage
+6. Check **Customize configuration before install**
 
-- Firmware: **UEFI/OVMF**.
-- Machine type: **Q35**.
-- CPU model: **host-passthrough**.
-- TPM: **TPM 2.0** using the emulator backend.
-- Disk: VirtIO when VirtIO drivers are available.
-- Network: VirtIO attached to the default NAT network.
-- Display: SPICE with a SPICE channel for installation and recovery.
-- Boot order: ISO first during installation, then the virtual disk.
+Before starting, verify these settings in the customization screen:
 
-NixOS 26.11's QEMU package includes the OVMF images by default, so this
-repository does not set the removed `qemuOvmf` options.
+| Setting | Value |
+|---------|-------|
+| Firmware | UEFI/OVMF |
+| Machine type | Q35 |
+| CPU model | host-passthrough |
+| TPM | TPM 2.0 (emulator backend) |
+| Disk bus | VirtIO |
+| Network | VirtIO, attached to default NAT network |
+| Display | SPICE |
+| Boot order | ISO first, then the disk |
 
-For the first installation, SATA storage is acceptable if Windows cannot see a
-VirtIO disk. Switch to VirtIO after installing the drivers.
+---
 
-## 5. Install Windows 11
+## Step 3 — Install Windows
 
-Install Windows normally. If Setup cannot find a VirtIO disk, attach the
-VirtIO driver ISO from the Fedora VirtIO project and load the storage driver,
-or temporarily use SATA:
+Boot the VM and install Windows normally. If the installer can't find the VirtIO disk, you need to load the VirtIO storage driver:
 
-<https://github.com/virtio-win/virtio-win-pkg-scripts/releases>
+1. Download the VirtIO driver ISO: <https://github.com/virtio-win/virtio-win-pkg-scripts/releases>
+2. Attach it to the VM as a second CD drive
+3. In the installer's "Where to install Windows" screen, click **Load driver** and browse to the VirtIO storage driver
+
+Alternatively, temporarily switch the disk to SATA for installation, then switch it back to VirtIO afterward.
 
 After Windows reaches the desktop:
+1. Install VirtIO storage and network drivers from the VirtIO ISO
+2. Install the QEMU guest agent (optional but useful)
+3. Run Windows Update fully
+4. Shut down, switch any remaining SATA devices to VirtIO, reboot and confirm networking works
 
-1. Install the VirtIO storage and network drivers.
-2. Install the QEMU guest agent if desired.
-3. Install Windows updates.
-4. Shut down and change SATA devices to VirtIO if SATA was used initially.
-5. Boot again and confirm networking works.
+---
 
-## 6. Sign in with a Microsoft account
+## Step 4 — Sign in and set a password
 
-During setup or later under **Settings > Accounts**, choose **Sign in with a
-Microsoft account** and complete Microsoft's authentication flow. This works
-normally in the VM, including Windows Hello.
+During setup or later under **Settings > Accounts**, sign in with a Microsoft account.
 
-WinApps uses RDP, and RDP requires an actual Windows account password. A
-Windows Hello PIN is not an RDP password. Before configuring WinApps:
+> **Critical:** WinApps connects via RDP, and RDP requires an actual account password. A Windows Hello PIN is **not** an RDP password.
 
-1. Confirm the Microsoft account can sign in with its password.
-2. If Windows only offers a PIN, open **Settings > Accounts > Sign-in options**
-   and add or confirm a password.
-3. Note the Windows account name and Microsoft account email address.
-4. Keep the password out of this repository and out of Nix expressions.
+Before continuing:
+1. Confirm you can sign in with your Microsoft account *password* (not just PIN)
+2. If Windows only shows PIN options, go to **Settings > Accounts > Sign-in options** and set a password
+3. Note the Windows account username and email — you'll need both later
 
-Windows activation is separate from account sign-in. Check **Settings > System
-> Activation**. If a digital license does not activate in the VM, use the
-activation troubleshooter and select **I changed hardware on this device**
-where applicable, or enter a valid product key. Activation depends on the
-license type and Microsoft account entitlement.
+Check Windows activation under **Settings > System > Activation**. If it doesn't activate automatically, use the activation troubleshooter and select "I changed hardware on this device" if applicable.
 
-Windows Home cannot accept incoming RDP connections as a host. Use Windows Pro,
-Enterprise, or Education for the VM, or use another remote-access solution.
+---
 
-## 7. Enable Windows RDP
+## Step 5 — Enable Remote Desktop in Windows
 
-Open **Settings > System > Remote Desktop**, enable **Remote Desktop**, and
-confirm the account is allowed to connect. Keep **Network Level Authentication**
-enabled.
+Go to **Settings > System > Remote Desktop** and turn it on. Leave **Network Level Authentication** enabled.
 
-The default libvirt NAT network normally assigns the VM an address in the
-`192.168.122.0/24` range. WinApps can discover this address with the `libvirt`
-backend, so a host-side port forward is not required.
-
-Find the domain name and address:
+The libvirt NAT network assigns the VM an address in `192.168.122.0/24`. Find it:
 
 ```bash
 virsh -c qemu:///system list --all
-virsh -c qemu:///system domifaddr RDPWindows
+virsh -c qemu:///system domifaddr RDPWindows  # replace with your VM name
 ```
 
-Replace `RDPWindows` with the actual domain name. Test RDP before installing
-WinApps integration:
+Test the RDP connection before going further:
 
 ```bash
 xfreerdp3 /u:'WINDOWS_USER' /p:'WINDOWS_PASSWORD' \
   /v:192.168.122.123:3389 /cert:tofu
 ```
 
-Do not leave the password in shell history. If the account is a Microsoft
-account, Windows may require the username in the form
-`MicrosoftAccount\\you@example.com`; use the format accepted by Windows.
+If this connects, you're ready for WinApps.
 
-## 8. Configure WinApps
+---
 
-Create the configuration as your normal user:
+## Step 6 — Configure WinApps
+
+Create the config file:
 
 ```bash
 mkdir -p ~/.config/winapps
@@ -180,7 +157,7 @@ ${EDITOR:-vi} ~/.config/winapps/winapps.conf
 chmod 600 ~/.config/winapps/winapps.conf
 ```
 
-Use this minimum configuration, replacing the values:
+Minimum config:
 
 ```ini
 RDP_USER="WINDOWS_USER"
@@ -196,85 +173,79 @@ DEBUG="true"
 AUTOPAUSE="off"
 ```
 
-For better password hygiene, use `RDP_ASKPASS` instead of `RDP_PASS` and point
-it to a user-only command or secret store. Never commit this file.
+Key settings:
+- `WAFLAVOR="libvirt"` — tells WinApps to manage the VM through libvirt
+- `VM_NAME` — must exactly match the libvirt domain name (check with `virsh list --all`)
+- `RDP_IP=""` — empty lets WinApps discover the IP through libvirt automatically
+- `RDP_SCALE="140"` — good for 1440p/4K; use `180` if text is too small
+- Never commit this file — it has your Windows password in it
 
-The important settings are:
-
-- `WAFLAVOR="libvirt"` tells WinApps to manage the libvirt VM.
-- `VM_NAME` must exactly match the libvirt domain name.
-- An empty `RDP_IP` lets WinApps discover the guest address through libvirt.
-- `RDP_SCALE="140"` is a good starting point for a 4K display; use `180` if
-  text remains too small.
-
-Run the setup wizard while Windows is powered on:
+Run the setup wizard (Windows must be powered on):
 
 ```bash
 winapps-setup --user
 ```
 
-The wizard queries Windows for installed applications and creates desktop
-entries. Detect applications installed later with:
+This scans Windows for installed apps and creates `.desktop` files for each one, so they appear in your app launcher.
+
+To pick up apps installed later:
 
 ```bash
 winapps-setup --user --add-apps
 ```
 
-The optional launcher is available as:
+To launch the WinApps launcher directly:
 
 ```bash
 winapps-launcher
 ```
 
-## 9. Troubleshooting
+---
 
-### No VM is found
+## Troubleshooting
 
-Confirm the system connection and URI:
+**No VM found**
 
 ```bash
 virsh -c qemu:///system list --all
-printf '%s\n' "$LIBVIRT_DEFAULT_URI"
+echo $LIBVIRT_DEFAULT_URI  # should be qemu:///system
 ```
 
-The URI should be `qemu:///system`. Log in again after adding the user to the
-`libvirtd` and `kvm` groups.
+Log out and back in if you just added your user to the `libvirtd` group.
 
-### The default network is inactive
-
-Start and persist it through Virt-Manager, or run:
+**Default network is inactive**
 
 ```bash
 virsh -c qemu:///system net-start default
 virsh -c qemu:///system net-autostart default
 ```
 
-### RDP authentication fails
+**RDP authentication fails**
 
-Check the Windows edition, Remote Desktop setting, account password, username
-format, Windows firewall, and manual FreeRDP connection. A PIN alone is not
-enough.
+Check: correct Windows edition (Pro/Enterprise), Remote Desktop enabled, account has a password (not just PIN), username format is right (`MicrosoftAccount\\you@example.com` for Microsoft accounts), Windows firewall isn't blocking port 3389.
 
-### Applications are detected but do not launch
+Test with FreeRDP directly to isolate whether it's WinApps or RDP:
 
-Ensure the VM is running, then run the setup wizard again. Inspect
-`~/.local/share/winapps/winapps.log` when `DEBUG="true"`. Remove stale
-certificates only for the affected VM from `~/.config/freerdp/server/`.
+```bash
+xfreerdp3 /u:'WINDOWS_USER' /p:'WINDOWS_PASSWORD' /v:192.168.122.X:3389 /cert:tofu
+```
 
-### The VM is slow
+**Apps show in setup but don't launch**
 
-Verify KVM acceleration, CPU mode `host-passthrough`, VirtIO disk/network
-devices, and a local SSD-backed disk. Start with 6 vCPUs and 12 to 16 GiB RAM.
-Only add CPU pinning or hugepages after measuring a real bottleneck.
+Make sure the VM is running, then re-run `winapps-setup --user`. Check `~/.local/share/winapps/winapps.log` (set `DEBUG="true"` in the config). Clear stale certificates: `rm -rf ~/.config/freerdp/server/192.168.122.*`
 
-## 10. Updating
+**VM is slow**
 
-WinApps is pinned by `flake.lock`:
+Verify: KVM acceleration is active (`virt-host-validate qemu`), CPU model is `host-passthrough`, disk is VirtIO on a local SSD, enough RAM allocated. Only add CPU pinning or hugepages after actually measuring a bottleneck.
+
+---
+
+## Updating WinApps
+
+WinApps is pinned by `flake.lock`. To update to a newer version:
 
 ```bash
 nix flake lock --update-input winapps ~/GitRepos/nixos-dotfiles
-sudo nixos-rebuild switch --flake ~/GitRepos/nixos-dotfiles#railgun
+nh os switch
+winapps-setup --user  # re-run if app definitions changed
 ```
-
-Rerun `winapps-setup --user` if the WinApps scripts or application definitions
-have changed.

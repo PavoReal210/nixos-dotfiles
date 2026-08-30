@@ -7,11 +7,6 @@
   #   exec-once = /path/to/your/app
   wayland.windowManager.hyprland.settings = {
     exec-once = [
-      # Wallpaper is now managed by stylix (stylix.image in theming/stylix.nix).
-      # stylix will set the wallpaper and auto-generate a base16 color scheme from it.
-      # "${pkgs.awww}/bin/awww-daemon"
-      # "${pkgs.waypaper}/bin/waypaper --restore"
-
       # Dropbox client
       "${pkgs.maestral}/bin/maestral start"
 

@@ -1,302 +1,303 @@
-# railgun's NixOS Configuration
+# railgun's NixOS Config
 
-Comprehensive NixOS flake configuration with home-manager for a complete Wayland desktop environment with gaming support.
+This is my full desktop configuration managed as a NixOS flake. Everything — the OS, the desktop environment, every app, every keybind, every color — is declared in code. If I nuke my drive and run one command, I get my exact setup back.
 
-## Overview
+If you're new to Nix: a **flake** is just a locked config file that pins every dependency to an exact version so the build is reproducible. A **module** is a `.nix` file that configures one thing (bluetooth, audio, etc.). They all get assembled together at rebuild time.
 
-This flake manages:
-- **System**: NixOS 25.11 with Lanzaboote (secure boot)
-- **Wayland Compositor**: Hyprland
-- **Bar**: Waybar
-- **Launcher**: Bemenu
-- **Terminal**: Ghostty / Kitty
-- **Editor**: Doom Emacs (via nix-doom-emacs-unstraightened) + vanilla Neovim
-- **Theme System**: Stylix (wallpaper-based)
-- **Notifications**: Dunst
-- **Secrets**: SOPS-nix for WiFi passwords, SSH keys, and other secrets
-- **Gaming**: Gamescope, Gamemode, Lutris, MangoHud, RetroArch (with RetroAchievements)
-- **Virtualization**: libvirt/KVM with QEMU, TPM 2.0, Virt-Manager, and WinApps
+---
 
-## Desktop
+## What's running
 
-| Component | Choice |
-|-----------|--------|
-| Compositor | Hyprland (blur, shadows, animations) |
+| Category | What I use |
+|----------|-----------|
+| OS | NixOS 25.11 |
+| Compositor | Hyprland |
 | Bar | Waybar |
-| Launcher | Bemenu + desktop-entry launcher |
-| Lockscreen | Hyprlock |
-| Idle | Hypridle |
-| Login / Greeter | greetd + ReGreet (Stylix-themed) |
-| Wallpaper | stylix |
-| Screenshot | Grimshot |
-| Clipboard | Cliphist + wl-clipboard |
+| Launcher | Bemenu |
+| Terminal | Ghostty (Kitty kept as backup) |
+| Editor | Doom Emacs + vanilla Neovim |
+| Browser | Floorp |
+| Theme | Stylix — auto-generates color scheme from wallpaper |
+| Login screen | greetd + ReGreet |
+| Notifications | Dunst |
+| Audio | PipeWire |
+| Secrets | SOPS-nix (encrypted with age) |
+| Virtualization | libvirt/KVM + WinApps (Windows apps on Linux) |
 
-### Utilities
+---
 
-Notifications: Dunst, Terminal: Ghostty/Kitty, Browser: Floorp, Editor: Doom Emacs + VSCode, Mail: Thunderbird, Spaced Rep: Anki, networkmanager-applet, blueman-applet, Maestral (Dropbox), PIA VPN.
+## Why I made certain choices
 
-`Super + D` opens a Bemenu-backed desktop-entry launcher. It lists applications
-from `.desktop` files, like Rofi's `drun` mode, instead of every executable in
-`PATH`. Bemenu remains available for the power, VPN, clipboard, and window menus.
+### Why NixOS instead of Arch/Ubuntu/etc.?
 
-### Screenshots
+Because everything is declared. On a normal distro you install things over time and slowly forget what you installed or why. Your config drifts. You reinstall and spend days getting everything back.
 
-Screenshots use Grimshot through two scripts defined in `home-manager/desktops/utilities/screenshot.nix`:
+With NixOS, if it's not in these files, it doesn't exist on the system. Reinstalling is just `nh os switch`. Everything is reproducible and you can roll back any change with one command.
 
-| Action | Keybinding | Behavior |
-|--------|-----------|----------|
-| Full screen | `Print` | Saves to `~/Pictures/Screenshots/<timestamp>.png` |
-| Area | `Super + Shift + S` | Saves to `~/Pictures/Screenshots/<timestamp>.png` and copies to clipboard |
+### Why Hyprland?
 
-Each script sends a Dunst notification on completion — normal urgency with the saved path on success, critical urgency on failure.
+It's a modern Wayland compositor that actually works well with NVIDIA (which historically has been a nightmare on Wayland). It has blur, shadows, smooth animations, and a great config format. It's the sweet spot between "looks good" and "actually stable daily driver."
 
-## Quick Start
+### Why Stylix for theming?
+
+Manually theming every app (terminal, bar, browser, lockscreen...) separately is a pain and they never quite match. Stylix generates a 16-color palette from your wallpaper and automatically applies it to every app at once. Change the wallpaper, everything recolors. The wallpaper path is declared once in `system/stylix.nix` and everything else inherits from it.
+
+### Why SOPS for secrets?
+
+Nix configs go on GitHub. You can't put your WiFi password or API keys in a `.nix` file and push it. SOPS encrypts secrets with an age key that only your machine has. The encrypted file can be committed safely — only your machine can decrypt it at build time.
+
+### Why greetd + ReGreet instead of GDM or SDDM?
+
+GDM pulls in half of GNOME. SDDM is fine but X11-centric. greetd with ReGreet is a lightweight, Wayland-native login manager. It also picks up the Stylix theme, so the login screen matches the desktop and lockscreen.
+
+### Why a custom suspend setup?
+
+NVIDIA + Wayland + sleep is notoriously broken. Without the fixes in `system/suspend.nix`, waking from sleep often hangs or crashes the compositor. The fix: freeze Hyprland before the GPU suspends, unfreeze after it wakes. Also, the sched-ext scheduler (`scx_rustland`) needs to be stopped and restarted around sleep or it can deadlock. These workarounds are annoying but necessary.
+
+### Why PipeWire instead of PulseAudio?
+
+PipeWire is the modern replacement. It handles audio *and* video streams, has better Bluetooth support, and works well with JACK for pro audio. PulseAudio compatibility is included so nothing breaks.
+
+### Why a custom CPU scheduler?
+
+Linux 6.12+ supports "sched-ext" — a framework for loading custom CPU schedulers as BPF programs. `scx_rustland` is one such scheduler that prioritizes desktop interactivity, which helps with gaming and general smoothness. It's opt-in and completely safe to disable.
+
+---
+
+## How to rebuild
 
 ```bash
-# Build and switch system configuration
+# Recommended (uses nh for nicer output)
 nh os switch
 
-# Or manually
+# Or the manual way
 sudo nixos-rebuild switch --flake .#railgun
-
-# Home Manager is integrated into the NixOS activation above; no separate
-# Home Manager activation command is required.
 ```
 
-## Structure
+Home Manager is baked into the NixOS build — there's no separate `home-manager switch` command needed.
+
+---
+
+## Folder structure
 
 ```
 nixos-dotfiles/
-├── flake.nix                       # Main flake (all inputs)
-├── system/                         # System-level NixOS config
-│   ├── configuration.nix           # Main system config
-│   ├── hardware-configuration.nix  # HW config (needs UUIDs)
-│   ├── boot.nix                    # Lanzaboote + secure boot
-│   ├── nvidia.nix                  # RTX 4060 Wayland config
-│   ├── gaming.nix                  # Gamescope, Gamemode, Lutris, kernel tuning
-│   ├── audio.nix                   # PipeWire + pamixer, pavucontrol, playerctl
-│   ├── bluetooth.nix               # Bluetooth + MT7921 fixes
-│   ├── default-desktop.nix         # Hyprland, XDG portals, Wayland env vars
-│   ├── desktop-manager.nix         # greetd + ReGreet (Stylix-themed login)
-│   ├── stylix.nix                  # System-level Stylix (themes the ReGreet greeter)
-│   ├── file-management.nix         # Thunar file manager + archive support
-│   ├── filesystem.nix              # BTRFS mount options (zstd, noatime, ssd, discard)
-│   ├── fonts.nix                   # Nerd Fonts, Noto, Weather Icons (single source of truth)
-│   ├── locale.nix                  # Locale + timezone
-│   ├── network.nix                 # NetworkManager + systemd-resolved + SOPS WiFi
-│   ├── nix-settings.nix            # Flakes, garbage collection, Cachix, package policy
-│   ├── printing.nix                # CUPS, Avahi discovery, IPP, and HP printers
-│   ├── cpu-performance.nix         # amd_pstate=active, EPP lock, resume hook + k10temp
-│   ├── zram.nix                    # Compressed RAM swap (memoryPercent=50)
-│   ├── ananicy.nix                 # ananicy-cpp automatic nice-level daemon
-│   ├── scheduler.nix               # nixpkgs kernel + scx_rustland scheduler
-│   ├── suspend.nix                 # NVIDIA/Hyprland + scx suspend-resume robustness
-│   ├── users.nix                   # User account + zsh
-│   ├── virtualisation.nix          # libvirt/KVM, QEMU, TPM, Virt-Manager, FreeRDP
-│   ├── winapps.nix                 # WinApps and WinApps Launcher packages
-│   ├── doas.nix                    # doas (sudo replacement) for pia
-│   ├── secrets.nix                 # SOPS age keyfile + permissions
-│   ├── vpn.nix                     # PIA VPN (WireGuard) + SOPS
-│   └── secrets/                    # Encrypted SOPS secrets (age)
-├── home-manager/                   # User-level config, activated by NixOS
-│   ├── home.nix                    # Main module + session vars
-│   ├── theming/                    # Stylix, fonts, fastfetch
-│   │   ├── stylix.nix             # Stylix configuration
-│   ├── utilities/                  # Apps and tools
-│   │   ├── common-packages.nix     # GUI + CLI packages
-│   │   ├── development-tools.nix   # Rust, Python, C/C++, Nix, LaTeX
-│   │   ├── devshells/              # Pinned dev environments (c-dev, py-dev, rs-dev)
-│   │   ├── doom.nix                # Doom Emacs (nix-doom-emacs-unstraightened)
-│   │   ├── retroarch.nix            # RetroArch + RetroAchievements, BIOS directory
-│   │   ├── ghostty.nix             # Ghostty terminal (Stylix)
-│   │   ├── kitty.nix               # Kitty terminal (Stylix)
-│   │   ├── thunderbird.nix         # Plain Thunderbird + default email handler
-│   │   ├── vscode.nix              # VSCode with extensions
-│   │   ├── zsh.nix                 # Zsh + Powerlevel10k
-│   │   ├── dunst.nix               # Notification daemon
-│   │   ├── ssh.nix                 # SSH + SOPS GitHub key
-│   │   └── ...                     # Other app configs
-│   ├── wallpapers/                 # Wallpaper assets
-│   └── desktops/                   # Desktop environment modules
-│       ├── common-packages.nix     # Shared compositor packages (grimshot, cliphist, etc.)
-│       ├── hyprland/
-│       │   ├── hyprland.nix        # General Hyprland settings (monitors, visuals, input)
-│       │   ├── keybinds.nix        # Keybindings (bind/bindm)
-│       │   ├── exec-once.nix       # Apps launched on startup
-│       │   ├── window-rules.nix    # Layer rules + window rules
-│       │   ├── hyprlock.nix        # Hyprlock lockscreen (stylix wallpaper + colors)
-│       │   └── hypridle.nix        # Idle management (lock, dpms, suspend)
-│       └── utilities/
-│           ├── bar/waybar.nix      # Waybar + custom modules
-│           ├── bemenu/             # Desktop launcher, powermenu, VPN selector
-│           └── screenshot.nix      # Grimshot scripts (shot-full, shot-area)
-└── docs/                           # Documentation
-    ├── devshells.md                # Development shell usage
-    ├── secrets.md                  # SOPS secrets setup
-    ├── base16-reference.md         # Base16 color palette reference
-    └── virtualisation-winapps.md   # Windows VM and WinApps setup
+├── flake.nix                       # Entry point — declares all inputs and the machine
+│
+├── system/                         # NixOS system config (requires root, survives reboots)
+│   ├── configuration.nix           # Imports all system modules
+│   ├── hardware-configuration.nix  # Auto-generated hardware config (UUIDs, kernel modules)
+│   ├── boot.nix                    # Lanzaboote (Secure Boot) + systemd-boot
+│   ├── nvidia.nix                  # RTX 4060 — proprietary drivers, Wayland modesetting
+│   ├── gaming.nix                  # Steam, Gamescope, Gamemode, Lutris, kernel tweaks
+│   ├── audio.nix                   # PipeWire (replaces PulseAudio) + playerctl
+│   ├── bluetooth.nix               # Bluetooth + workarounds for the MediaTek MT7921 chip
+│   ├── default-desktop.nix         # Enables Hyprland and sets Wayland environment variables
+│   ├── desktop-manager.nix         # greetd login manager + ReGreet greeter
+│   ├── stylix.nix                  # Declares the wallpaper — the single source of truth
+│   ├── file-management.nix         # Thunar file manager + archive/thumbnail support
+│   ├── filesystem.nix              # BTRFS mount options (compression, SSD optimizations)
+│   ├── fonts.nix                   # Every font installed system-wide
+│   ├── locale.nix                  # Language and timezone
+│   ├── network.nix                 # NetworkManager + systemd-resolved for DNS
+│   ├── nix-settings.nix            # Flakes, binary caches, garbage collection policy
+│   ├── printing.nix                # CUPS + Avahi network printer discovery
+│   ├── cpu-performance.nix         # AMD P-State active mode, EPP, CPU temperature monitoring
+│   ├── zram.nix                    # Compressed RAM-based swap (faster than disk swap)
+│   ├── ananicy.nix                 # Auto nice-level daemon (CachyOS rules) for smoother desktop
+│   ├── scheduler.nix               # scx_rustland sched-ext scheduler for desktop responsiveness
+│   ├── suspend.nix                 # Suspend/resume hooks to stop NVIDIA + Hyprland hanging on wake
+│   ├── users.nix                   # User account definition
+│   ├── virtualisation.nix          # libvirt/KVM + QEMU + TPM 2.0 for Windows VMs
+│   ├── winapps.nix                 # WinApps packages (run Windows apps in your Linux DE)
+│   ├── doas.nix                    # doas (lighter sudo replacement) — used for PIA VPN commands
+│   ├── secrets.nix                 # Points SOPS at the age key file
+│   └── vpn.nix                     # PIA VPN via WireGuard
+│
+└── home-manager/                   # User-level config (no root needed, per-user)
+    ├── home.nix                    # Entry point — session variables, imports theming first
+    │
+    ├── theming/                    # Loaded before everything else so colors propagate correctly
+    │   ├── stylix.nix              # Inherits wallpaper from system, applies theme to all apps
+    │   ├── font-settings.nix       # Font sizes and per-context overrides
+    │   └── fastfetch/              # System info display config
+    │
+    ├── utilities/                  # User applications and CLI tools
+    │   ├── common-packages.nix     # The main list of installed apps (gimp, vlc, bat, eza, etc.)
+    │   ├── development-tools.nix   # Dev tools: Rust, Python, C/C++, Nix LSP, LaTeX
+    │   ├── devshells/              # Isolated dev environments (enter with `nix develop`)
+    │   │   ├── c-general-devshell.nix
+    │   │   ├── python-devshell.nix
+    │   │   └── rust-devshell.nix
+    │   ├── doom.nix                # Doom Emacs via nix-doom-emacs-unstraightened
+    │   ├── ghostty.nix             # Primary terminal
+    │   ├── kitty.nix               # Backup terminal (kept configured but not default)
+    │   ├── floorp.nix              # Firefox fork browser config
+    │   ├── vscode.nix              # VSCode with extensions
+    │   ├── thunderbird.nix         # Email
+    │   ├── anki.nix                # Spaced repetition flashcards
+    │   ├── retroarch.nix           # Emulation with RetroAchievements support
+    │   ├── borg-backup.nix         # Automated backups
+    │   ├── dunst.nix               # Notification daemon
+    │   ├── ssh.nix                 # SSH config + SOPS-managed GitHub key
+    │   └── zsh.nix                 # Zsh shell + Powerlevel10k prompt
+    │
+    └── desktops/                   # Everything specific to the desktop environment
+        ├── common-packages.nix     # Wayland tools: clipboard, screenshot, brightness
+        ├── hyprland/               # Hyprland compositor config, split by concern
+        │   ├── hyprland.nix        # Monitor layout, visuals, input settings
+        │   ├── keybinds.nix        # All keyboard/mouse bindings
+        │   ├── exec-once.nix       # Apps that launch at startup
+        │   ├── window-rules.nix    # Which apps float, which workspace they land on
+        │   ├── hyprlock.nix        # Lockscreen (same wallpaper as desktop)
+        │   └── hypridle.nix        # Screen lock + sleep after idle timeout
+        └── components/             # Desktop UI components
+            ├── bar/                # Waybar config + custom widget scripts
+            ├── bemenu/             # App launcher + power menu + VPN selector
+            └── screenshot.nix      # Screenshot scripts (full screen and area select)
 ```
+
+---
 
 ## Editors
 
 ### Doom Emacs
 
-Doom Emacs is managed via [nix-doom-emacs-unstraightened](https://github.com/marienz/nix-doom-emacs-unstraightened), which builds Doom from Nix and keeps everything reproducible. Your configuration lives in [railgun210/doom-emacs](https://github.com/railgun210/doom-emacs) and is pulled in as a flake input.
+Managed via [nix-doom-emacs-unstraightened](https://github.com/marienz/nix-doom-emacs-unstraightened), which builds Doom from Nix so it's reproducible and doesn't require a separate `doom sync` step. The actual Doom config (keybindings, packages, theme) lives in [railgun210/doom-emacs](https://github.com/railgun210/doom-emacs) and is pulled in as a flake input — so it rebuilds from that repo automatically.
 
-Key details:
-- Uses `emacs-pgtk` for Wayland-native rendering
-- Binary cache via [Cachix](https://app.cachix.org/cache/doom-emacs-unstraightened) for faster builds
-- Theme: `doom-one` (configured in `config.el`)
-- Transparency: 90% (configured in `config.el`)
+Uses `emacs-pgtk` for native Wayland rendering. Fast builds come from the [nix-doom-emacs-unstraightened Cachix cache](https://app.cachix.org/cache/doom-emacs-unstraightened) so you don't have to compile everything from scratch.
 
 ### Vanilla Neovim
 
-A minimal Neovim installation (no plugins) is available for quick terminal edits. `EDITOR` and `VISUAL` are set to `emacsclient -a ''`.
+A minimal Neovim with zero plugins is always available for quick terminal edits. `EDITOR` and `VISUAL` both point to `emacsclient` so most tools open Emacs, but Neovim is there when you just need to edit something fast without starting a server.
 
-## Theme System (Stylix)
+---
 
-Colors are managed via Stylix, which generates a base16 palette from the current wallpaper:
+## Theming (Stylix)
+
+The idea: declare one wallpaper, get everything themed automatically.
 
 ```nix
-# system/stylix.nix declares the wallpaper once:
+# system/stylix.nix — the wallpaper lives here
 stylix.image = ../home-manager/wallpapers/still_wallpapers/wallhaven-zpxjjo.jpg;
 
-# home-manager/theming/stylix.nix inherits it from NixOS:
+# home-manager/theming/stylix.nix — inherits from the system config
 image = osConfig.stylix.image;
-# base16Scheme is intentionally left unset so Stylix generates from the wallpaper
 ```
 
-Colors are applied to:
-- Hyprland, Waybar, Bemenu, Hyprlock
-- GTK, Qt, Ghostty, Kitty, Firefox, Anki
+Stylix runs a genetic algorithm on the wallpaper to generate a 16-color base16 palette and applies it to: Hyprland, Waybar, Hyprlock, the ReGreet login screen, GTK apps, Qt apps, Ghostty, Kitty, Anki, and more. Desktop, lockscreen, and login screen all match automatically.
 
-VSCode is intentionally excluded from Stylix and uses the explicitly pinned
-Turbo C 3.0 theme described in the [virtualization and WinApps guide](docs/virtualisation-winapps.md).
+VSCode is excluded from Stylix on purpose — it uses the [Turbo C 3.0](https://marketplace.visualstudio.com/items?itemName=WatkinsLabs.turboc-3-0-theme) theme because I like it.
 
-The same Stylix wallpaper is used by Hyprlock and the ReGreet login screen (greetd), so the desktop, lockscreen, and login screen all match. The wallpaper path is declared once in `system/stylix.nix`; integrated Home Manager Stylix inherits it from the surrounding NixOS configuration through `osConfig.stylix.image`.
-
-GTK widgets are themed by Stylix's built-in GTK target (no custom theme derivation). The icon theme is set separately in `theming/stylix.nix`.
-
-Fonts are managed at system level (`system/fonts.nix`) with Stylix font preferences set in `theming/stylix.nix` and `theming/font-settings.nix`. Primary fonts: Terminess Nerd Font Mono (monospace), Overpass (sans), Cozette (status bars), Symbols Nerd Font Mono, Weather Icons.
-
-See [docs/base16-reference.md](docs/base16-reference.md) for the full color slot reference.
-
-## Virtualization and WinApps
-
-The system enables libvirt/KVM through `system/virtualisation.nix` and installs
-QEMU-KVM, TPM 2.0 support, Virt-Manager, SPICE tools, and FreeRDP 3. WinApps
-and its optional launcher are installed from the pinned WinApps flake input in
-`system/winapps.nix`.
-
-This host uses an AMD Ryzen 7 5800X with AMD-V/SVM, nested paging, IOMMU, and
-active KVM acceleration. The configuration keeps AMD P-State performance
-handling while allowing normal CPU idle states and PCIe power management.
-
-The Nix configuration does not create a Windows VM or store Windows credentials.
-Create the VM in Virt-Manager, configure Windows RDP, and create the per-user
-WinApps configuration as described in the [virtualization and WinApps guide](docs/virtualisation-winapps.md).
+---
 
 ## Gaming
 
-The configuration includes a dedicated gaming module (`system/gaming.nix`) with:
+`system/gaming.nix` sets up:
 
-- **Gamescope**: Valve's gaming compositor for better frame pacing, HDR, and FSR upscaling
-- **Gamemode**: Feral Interactive's automatic CPU/IO performance optimizer
-- **Lutris**: Game launcher for non-Steam games
-- **Steam**: Full Steam integration with Proton support
-- **Goverlay**: GUI for MangoHud (user-level, in `home-manager/utilities/common-packages.nix`)
+- **Steam** with full Proton support (run Windows games natively)
+- **Gamescope** — Valve's micro-compositor for games; gives you better frame pacing, HDR, and FSR upscaling even in windowed mode
+- **Gamemode** — automatically cranks CPU/IO performance when a game launches, resets when you quit
+- **Lutris** — for games not on Steam (GOG, Epic, etc.)
+- **MangoHud + GOverlay** — in-game performance overlay with a GUI to configure it
 
-### Kernel Optimizations
+Kernel tweaks: `preempt=full` (snappier desktop while gaming), low swappiness (keeps game data in RAM), and tuned VFS cache pressure (faster game asset reads).
 
-- `preempt=full` — Full preemption for better desktop responsiveness during gaming
-- `vm.swappiness=10` — Keeps games in physical RAM
-- `vm.vfs_cache_pressure=50` — Faster game asset reads
+### NVIDIA (RTX 4060)
 
-### NVIDIA
+Proprietary drivers with Wayland modesetting enabled. VA-API hardware video decode is configured so video playback doesn't murder the CPU. 32-bit graphics libraries are included for Proton/Wine compatibility.
 
-The RTX 4060 uses proprietary NVIDIA modules with:
-- Wayland modesetting enabled
-- VA-API hardware video decode
-- 32-bit graphics support for Proton games
+Fine-grained power management is intentionally **disabled** — it's still experimental on Ada Lovelace GPUs and can cause stability issues on newer kernels.
 
 ### RetroArch
 
-RetroArch is built from `retroarch-bare` (nixpkgs has no `programs.retroarch` module) and configured in `home-manager/utilities/retroarch.nix`.
+Built from `retroarch-bare` and configured in `home-manager/utilities/retroarch.nix`. Cores included:
 
-- **Cores**: NES (`mesen`), SNES (`bsnes-hd` + `snes9x`), N64 (`mupen64plus`), PS1 (`beetle-psx-hw`), PS2 (`pcsx2`), GameCube/Wii (`dolphin`), GBA (`mgba`), Dreamcast (`flycast`), Sega Saturn (`beetle-saturn`)
-- **Video**: Vulkan on the RTX 4060, fullscreen, nearest-neighbour scaling, vsync on
-- **Upscaling**: seeded into `retroarch-core-options.cfg` on first run (only if the file is absent) — 4x internal resolution on PS1/PS2/GameCube, 6x Saturn, 1440x1440 Dreamcast, HD supersampling on SNES
-- **BIOS**: `~/Emulation/bios` and `~/Emulation/bios/pcsx2/bios` are created during activation, but BIOS files must be supplied from your own legally obtained dumps. Activation does not download or trust firmware from the network.
-- **RetroAchievements**: enabled globally (hardcore mode off, so rewind/savestates stay usable). Credentials are stored in sops (`retroachievements-username`/`retroachievements-password` in `system/secrets/secrets.yaml`) and seeded into RetroArch's config at activation, so they never land in the nix store.
+| System | Core |
+|--------|------|
+| NES | Mesen |
+| SNES | bsnes-hd + snes9x |
+| N64 | mupen64plus |
+| PS1 | beetle-psx-hw |
+| PS2 | pcsx2 |
+| GameCube/Wii | Dolphin |
+| GBA | mGBA |
+| Dreamcast | Flycast |
+| Sega Saturn | beetle-saturn |
 
-### Printing
+RetroAchievements is enabled globally (hardcore mode off so savestates still work). Credentials are stored in SOPS and seeded into RetroArch's config at activation — they never land in the Nix store in plaintext.
 
-Wi-Fi printing is configured in `system/printing.nix` using CUPS, Avahi/mDNS,
-driverless IPP discovery, and HPLIP for the HP printers used by this system.
-HPLIP is not required for non-HP printers unless their model needs it.
+BIOS directories are created at activation but BIOS files aren't included — supply your own from legally obtained dumps.
 
-After rebuilding with `nh os switch`, use one of these tools to add the printer:
+---
 
-- `system-config-printer` for the graphical setup tool
-- `http://localhost:631` for the CUPS web interface
-- `lpinfo -v` to inspect discovered printer backends
-- `lpstat -p` to list configured printers
+## Virtualization and WinApps
 
-The configuration intentionally does not hard-code a printer IP address. If a
-printer needs a persistent declarative entry, add its stable IPP URI and model
-to `hardware.printers.ensurePrinters` in `system/printing.nix`.
+`system/virtualisation.nix` enables libvirt/KVM with QEMU, TPM 2.0 (needed for Windows 11), Virt-Manager, SPICE tools, and FreeRDP 3.
+
+WinApps lets you run individual Windows apps (Word, Outlook, etc.) from a headless Windows VM and have them appear as normal Linux windows in your taskbar. `system/winapps.nix` installs the WinApps packages.
+
+The Nix config doesn't create the VM or store Windows credentials. You do that yourself in Virt-Manager. See [docs/virtualisation-winapps.md](docs/virtualisation-winapps.md) for the full setup walkthrough.
+
+---
 
 ## Suspend & Power
 
-Suspend/resume is hardened against the classic NVIDIA + Wayland "dies on wake" hang (`system/suspend.nix`):
+NVIDIA + Wayland + sleep has historically been a mess. `system/suspend.nix` works around it:
 
-- **Hyprland is frozen during suspend** — the system sleep hook SIGSTOPs the compositor before the GPU is suspended and SIGCONTs it after wake, so it never races the GPU disappearing/reappearing.
-- **sched-ext scheduler is cycled** — the system sleep hook stops `scx_rustland` before sleep and reloads it after wake (userspace schedulers can wedge on CPU hotplug across resume).
-- **CPU performance settings re-applied on resume** — `powerManagement.resumeCommands` reapplies the performance EPP after wake (`system/cpu-performance.nix`).
-- **Displays re-enable cleanly** — hypridle waits 1s after resume before turning DPMS back on.
+- **Hyprland gets frozen before sleep** — the system sleep hook sends SIGSTOP to the compositor right before the GPU suspends, then SIGCONT after wake. Without this, Hyprland often races the GPU disappearing and hangs.
+- **The sched-ext scheduler stops and restarts around sleep** — `scx_rustland` can deadlock on CPU state changes during resume, so it's stopped before sleep and reloaded after.
+- **CPU performance settings re-applied on wake** — the AMD EPP setting gets reset by some firmware, so `powerManagement.resumeCommands` reapplies it.
+- **Display re-enables with a 1 second delay** — Hypridle waits a beat after resume before turning DPMS back on, which prevents a blank screen race condition.
 
-Locking:
-- `Super + X` locks immediately (Hyprlock). The power menu (`Super + Shift + X`) offers Lock / Suspend / Restart / Shutdown / Logout.
-- Hyprlock and the ReGreet login screen (greetd) both use the Stylix wallpaper, so lockscreen, login screen, and desktop all match.
+Locking: `Super + X` locks immediately with Hyprlock. `Super + Shift + X` opens the power menu (Lock / Suspend / Restart / Shutdown / Logout).
 
-## Rebuilding
-
-```bash
-# Using nh (recommended)
-nh os switch
-
-# Or manually
-sudo nixos-rebuild switch --flake .#railgun
-```
-
-Home Manager is configured as a NixOS module for `railgun`. The commands above
-rebuild and activate the system and the user environment together.
+---
 
 ## Secrets
 
-SOPS is configured for secrets management. Edit secrets with:
+Secrets (WiFi, PIA credentials, RetroAchievements login, SSH keys) are encrypted with [SOPS](https://github.com/getsops/sops) using an age key that only your machine has.
 
+Edit secrets:
 ```bash
 export EDITOR="emacsclient -a ''"
 sops system/secrets/secrets.yaml
 ```
 
-Secrets include WiFi, PIA VPN, and the RetroAchievements credentials (`retroachievements-username` / `retroachievements-password`). See [docs/secrets.md](docs/secrets.md) for setup instructions.
+See [docs/secrets.md](docs/secrets.md) for how to set up the age key on a new machine.
+
+---
+
+## Screenshots
+
+| Action | Keybinding | What happens |
+|--------|-----------|-------------|
+| Full screen | `Print` | Saves to `~/Pictures/Screenshots/<timestamp>.png` |
+| Area select | `Super + Shift + S` | Saves AND copies to clipboard |
+
+Both scripts send a Dunst notification on completion — green on success, red on failure.
+
+---
 
 ## Documentation
 
-| Document | Description |
-|----------|-------------|
-| [docs/devshells.md](docs/devshells.md) | Development shell usage (c-dev, py-dev, rs-dev) |
-| [docs/secrets.md](docs/secrets.md) | SOPS secrets setup and management |
-| [docs/base16-reference.md](docs/base16-reference.md) | Base16 color palette slot reference |
-| [docs/hyprland-animations.md](docs/hyprland-animations.md) | Hyprland animation system, bezier curves, and styles |
-| [docs/virtualisation-winapps.md](docs/virtualisation-winapps.md) | Windows VM, libvirt, Microsoft account, RDP, and WinApps setup |
+| Doc | What's in it |
+|-----|-------------|
+| [docs/devshells.md](docs/devshells.md) | How to use the isolated dev environments |
+| [docs/secrets.md](docs/secrets.md) | SOPS age key setup on a new machine |
+| [docs/base16-reference.md](docs/base16-reference.md) | Base16 color slot reference for theming |
+| [docs/hyprland-animations.md](docs/hyprland-animations.md) | Hyprland animation system and bezier curves |
+| [docs/virtualisation-winapps.md](docs/virtualisation-winapps.md) | Full Windows VM + WinApps setup walkthrough |
 
-## Notes
+---
 
-- `hardware-configuration.nix` needs real btrfs UUIDs when deployed
-- Update `users.nix` with the correct user UID
-- SOPS CLI uses `~/.config/sops/age/keys.txt`; system and Home Manager activation use `/etc/sops/age/keys.txt`
-- Doom Emacs config is managed via the [railgun210/doom-emacs](https://github.com/railgun210/doom-emacs) repository, pulled in as a flake input
-- Vanilla Neovim is available for quick terminal edits with no plugin overhead
+## Deploying on a fresh machine
+
+1. Boot NixOS live ISO
+2. Partition and format the disk (BTRFS recommended)
+3. Clone this repo
+4. Update `system/hardware-configuration.nix` with real UUIDs from `blkid`
+5. Update `system/users.nix` with the correct user UID
+6. Set up the SOPS age key at `/etc/sops/age/keys.txt` (see [docs/secrets.md](docs/secrets.md))
+7. Run `sudo nixos-install --flake .#railgun`
+8. Reboot, log in, done

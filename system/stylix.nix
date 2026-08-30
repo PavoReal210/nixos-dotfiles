@@ -12,24 +12,13 @@
 
     polarity = "dark";
 
-    # Keep the greeter font in line with the desktop theme
+    # Keep the greeter font in line with the desktop theme.
+    # Packages are omitted here — all fonts are already in system/fonts.nix.
     fonts = {
-      serif = {
-        package = pkgs.nerd-fonts.tinos;
-        name = "Tinos Nerd Font";
-      };
-      sansSerif = {
-        package = pkgs.nerd-fonts.overpass;
-        name = "Overpass Nerd Font Mono";
-      };
-      monospace = {
-        package = pkgs.nerd-fonts.terminess-ttf;
-        name = "Terminess Nerd Font Mono";
-      };
-      emoji = {
-        package = pkgs.noto-fonts-color-emoji;
-        name = "Noto Color Emoji";
-      };
+      serif.name = "Tinos Nerd Font";
+      sansSerif.name = "Overpass Nerd Font Mono";
+      monospace.name = "Terminess Nerd Font Mono";
+      emoji.name = "Noto Color Emoji";
     };
 
     targets.regreet.enable = true;

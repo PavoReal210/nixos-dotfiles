@@ -52,7 +52,7 @@
 
         ghostty.enable = false;
         kitty.enable = true;
-        alacritty.enable = true;
+        alacritty.enable = false; # alacritty is not installed
 
         vscode.enable = false;
         neovide.enable = true;

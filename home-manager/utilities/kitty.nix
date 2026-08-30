@@ -1,5 +1,6 @@
 # home-manager/utilities/kitty.nix
-# Kitty terminal configuration
+# Kitty terminal — kept as a backup/secondary terminal. Primary terminal is Ghostty.
+# To switch: change TERMINAL in home.nix and update keybinds in hyprland/keybinds.nix.
 {
   config,
   lib,
@@ -49,9 +50,5 @@ in {
 
   home.file.".local/share/kitty/.keep".text = "";
 
-  home.packages = with pkgs; [
-    # Packages for Kitty
-    kitty-img
-    kitty-themes
-  ];
+  home.packages = [];
 }

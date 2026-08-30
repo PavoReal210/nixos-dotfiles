@@ -18,9 +18,5 @@
     file-roller
     kdePackages.kate
 
-    # Wallpaper (awww + waypaper)
-    # Commented out for now so stylix can set the wallpaper.
-    # waypaper
-    # awww
   ];
 }

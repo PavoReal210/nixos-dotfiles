@@ -9,9 +9,9 @@
   ...
 }: {
   imports = [
-    # The system Stylix module supplies Stylix's Home Manager module through
-    # the integrated NixOS/Home Manager configuration in flake.nix.
-    ./theming # This has to get loaded first
+    # theming MUST be first: Stylix variables (colors, fonts) need to be
+    # evaluated before utilities and desktops consume them.
+    ./theming
     ./utilities
     ./desktops
   ];
