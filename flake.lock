@@ -124,11 +124,11 @@
     "doomdir": {
       "flake": false,
       "locked": {
-        "lastModified": 1788056977,
-        "narHash": "sha256-c8rxpH7bJgwL0ceN0WGLmi56n1Z1ofyFG7VVPW2cqXg=",
+        "lastModified": 1788058277,
+        "narHash": "sha256-iYrCAqtowMbiFj55zRLxaQEZOUhwC45aXJL3S1/8VSQ=",
         "owner": "railgun210",
         "repo": "doom-emacs",
-        "rev": "c3c6bc7ff787eeb0e84fa665e27fff84d1adc435",
+        "rev": "e69b07bb896e6bc41371b3408ea822c92266dce6",
         "type": "github"
       },
       "original": {
