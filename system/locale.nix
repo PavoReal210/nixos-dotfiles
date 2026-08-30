@@ -1,7 +1,10 @@
 # system/locale.nix
 # Locale and timezone settings
-{ config, pkgs, ... }:
 {
+  config,
+  pkgs,
+  ...
+}: {
   # Timezone
   time.timeZone = "America/Chicago";
 

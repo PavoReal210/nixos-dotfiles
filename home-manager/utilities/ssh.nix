@@ -1,7 +1,5 @@
 # home-manager/utilities/ssh.nix
-{ config, ... }:
-
-{
+{config, ...}: {
   # Sops secrets for ssh
   sops = {
     age.keyFile = "/etc/sops/age/keys.txt";
@@ -19,11 +17,9 @@
   programs.ssh = {
     enable = true;
     enableDefaultConfig = false;
-    settings = {
-      "Host github.com" = {
-        IdentityFile = config.sops.secrets.github-ssh-key.path;
-        IdentitiesOnly = "yes";
-      };
+    matchBlocks."github.com" = {
+      identityFile = config.sops.secrets.github-ssh-key.path;
+      identitiesOnly = true;
     };
   };
 }

@@ -3,41 +3,37 @@
   lib,
   pkgs,
   ...
-}:
-let
+}: let
   cfg = config.stylix.customFonts;
-in
-{
+in {
   options = {
     stylix.customFonts = lib.mkOption {
       type = lib.types.attrs;
-      default = { };
+      default = {};
       description = "Custom font definitions for status bars, weather, etc.";
     };
 
-    utils.fonts =
-      let
-        font = lib.types.submodule {
-          options = {
-            family = lib.mkOption { type = lib.types.str; };
-            style = lib.mkOption { type = lib.types.str; };
-            weight = lib.mkOption { type = lib.types.str; };
-            size = lib.mkOption { type = lib.types.number; };
-            package = lib.mkOption { type = lib.types.package; };
-          };
+    utils.fonts = let
+      font = lib.types.submodule {
+        options = {
+          family = lib.mkOption {type = lib.types.str;};
+          style = lib.mkOption {type = lib.types.str;};
+          weight = lib.mkOption {type = lib.types.str;};
+          size = lib.mkOption {type = lib.types.number;};
+          package = lib.mkOption {type = lib.types.package;};
         };
-      in
-      {
-        describeFont = lib.mkOption {
-          type = lib.types.functionTo lib.types.str;
-        };
-        primary = lib.mkOption { type = font; };
-        secondary = lib.mkOption { type = font; };
-        monospace = lib.mkOption { type = font; };
-        status = lib.mkOption { type = font; };
-        weather = lib.mkOption { type = font; };
-        symbols = lib.mkOption { type = font; };
       };
+    in {
+      describeFont = lib.mkOption {
+        type = lib.types.functionTo lib.types.str;
+      };
+      primary = lib.mkOption {type = font;};
+      secondary = lib.mkOption {type = font;};
+      monospace = lib.mkOption {type = font;};
+      status = lib.mkOption {type = font;};
+      weather = lib.mkOption {type = font;};
+      symbols = lib.mkOption {type = font;};
+    };
   };
 
   config = {
@@ -136,7 +132,7 @@ in
                 <edit name="hinting" mode="assign">
                   <bool>true</bool>
                 </edit>
-              </match>          
+              </match>
             </fontconfig>
           '';
         };
@@ -148,6 +144,5 @@ in
       config.stylix.fonts.monospace.name
       cfg.symbols.family
     ];
-
   };
 }

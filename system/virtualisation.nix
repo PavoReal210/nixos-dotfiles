@@ -1,7 +1,6 @@
 # system/virtualisation.nix
 # libvirtd/KVM for a Windows 11 VM (WinApps backend)
-{ pkgs, ... }:
-{
+{pkgs, ...}: {
   virtualisation.libvirtd = {
     enable = true;
     qemu = {

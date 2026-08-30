@@ -7,8 +7,7 @@
 #   (enters a subshell with pinned Python tools)
 #   $ exit
 #   (returns to normal shell)
-{ pkgs, ... }:
-let
+{pkgs, ...}: let
   pythonDevShell = pkgs.mkShell {
     packages = with pkgs; [
       python3
@@ -21,8 +20,7 @@ let
       python312Packages.numpy
     ];
   };
-in
-{
+in {
   home.packages = [
     (pkgs.writeShellScriptBin "py-dev" ''
       # Enter the pinned Python dev environment

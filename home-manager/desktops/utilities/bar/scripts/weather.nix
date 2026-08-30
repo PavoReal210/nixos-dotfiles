@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{pkgs, ...}:
 pkgs.writeShellScriptBin "weather" ''
   if [ -z "$WEATHER_API_KEY_FILE" ] || [ ! -f "$WEATHER_API_KEY_FILE" ]; then
     WEATHER_API_KEY_FILE="''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/secrets/weather-api-key"

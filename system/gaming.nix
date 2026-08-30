@@ -4,7 +4,7 @@
 # Includes:
 #   - Gamescope (Valve's gaming compositor)
 #   - Gamemode (Feral Interactive's performance optimizer)
-#   - Lutris + Heroic (game launchers)
+#   - Lutris (game launcher)
 #   - Kernel parameters for maximum gaming performance
 {
   config,
@@ -21,12 +21,8 @@
     gamescopeSession.enable = true;
     protontricks.enable = true;
     extraPackages = with pkgs; [
-      # Use git versions from Chaotic-Nyx for the latest gaming optimizations:
-      # gamescope_git — latest SteamOS compositor with newest HDR/VRR fixes
-      # mangohud_git — latest MangoHud with newest GPU monitoring features
-      gamescope_git
-      mangohud_git
-      proton-cachyos
+      gamescope
+      mangohud
     ];
   };
 
@@ -39,21 +35,17 @@
   environment.systemPackages = with pkgs; [
     # Game launchers
     lutris
-    heroic # Epic Games / GOG launcher
     gamepad-tool # SDL2 gamepad mapping editor
 
     # Communication
-    discord-krisp
+    discord
 
     # Compatibility layers
     winetricks
     wineWow64Packages.stable
 
-    # Vulkan — use git versions from Chaotic-Nyx for latest validation and tools
-    vulkanPackages_latest.vulkan-tools
-    vulkanPackages_latest.vulkan-loader
-    vulkanPackages_latest.vulkan-validation-layers
-    low-latency-layer
+    # Vulkan tools
+    vulkan-tools
   ];
 
   # ── Kernel Parameters ────────────────────────────────────────────────────────

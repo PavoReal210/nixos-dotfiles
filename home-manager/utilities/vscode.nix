@@ -4,8 +4,7 @@
   lib,
   pkgs,
   ...
-}:
-let
+}: let
   ellsp = pkgs.vscode-utils.extensionFromVscodeMarketplace {
     name = "Ellsp";
     publisher = "jcs090218";
@@ -19,8 +18,7 @@ let
     version = "0.0.1";
     hash = "sha256-cjQxQr1Yt1twcuTFpQ6ZPDrC4mLGLa+inCnH36dPGm8=";
   };
-in
-{
+in {
   # Force VS Code (and all Electron apps) to use the native Wayland backend
   home.sessionVariables = {
     NIXOS_OZONE_WL = "1";
@@ -36,10 +34,9 @@ in
       # must be installed manually through the VSCode UI. They will persist fine
       # alongside nix-managed extensions.
       # It's not an exactly perfect system but other than just using Neovim this is the best option.
-      extensions =
-        with pkgs.vscode-extensions;
+      extensions = with pkgs.vscode-extensions;
         [
-           # Theme
+          # Theme
 
           # Nix
           jnoortheen.nix-ide
@@ -82,11 +79,11 @@ in
           njpwerner.autodocstring
           shd101wyy.markdown-preview-enhanced
         ]
-         ++ [ ellsp turbo-c-theme ];
+        ++ [ellsp turbo-c-theme];
 
       userSettings = {
-         # Theme — Turbo C 3.0, set explicitly instead of Stylix's generated theme
-         "workbench.colorTheme" = "Turbo C 3.0 Theme";
+        # Theme — Turbo C 3.0, set explicitly instead of Stylix's generated theme
+        "workbench.colorTheme" = "Turbo C 3.0 Theme";
 
         # Window
         "window.newWindowDimensions" = "default";

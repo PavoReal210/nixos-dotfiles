@@ -1,6 +1,10 @@
 # system/winapps.nix
-{ inputs, system, pkgs, ... }:
 {
+  inputs,
+  system,
+  pkgs,
+  ...
+}: {
   environment.systemPackages = with pkgs; [
     inputs.winapps.packages.${system}.winapps
     inputs.winapps.packages.${system}.winapps-launcher

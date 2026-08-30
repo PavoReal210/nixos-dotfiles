@@ -1,5 +1,4 @@
-{ ... }:
-{
+{...}: {
   imports = [
     ./hm-ricing-module.nix
     ./fastfetch

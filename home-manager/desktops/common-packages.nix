@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{pkgs, ...}:
 # Packages shared across the desktop environment.
 # Compositor-specific tools (hyprlock, hypridle) live in their module files.
 {

@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{pkgs, ...}:
 pkgs.writeShellScriptBin "keyboard-toggle" ''
   kb_name=$(hyprctl devices -j 2>/dev/null | ${pkgs.jq}/bin/jq -r '.keyboards[0].name' 2>/dev/null)
   if [ -n "$kb_name" ]; then

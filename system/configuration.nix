@@ -1,6 +1,6 @@
 # system/configuration.nix
 # Main NixOS system configuration
-{ ... }: {
+{...}: {
   imports = [
     ./ananicy.nix
     ./audio.nix

@@ -1,12 +1,15 @@
 # home-manager/utilities/dunst.nix
 # Dunst notification daemon configuration with Stylix theming
-{ config, lib, pkgs, ... }:
-let
-  c = config.lib.stylix.colors;
-in
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
+  c = config.lib.stylix.colors;
+in {
   # Packages that are really only used by dunstrc
-  home.packages = with pkgs; [ libnotify ];
+  home.packages = with pkgs; [libnotify];
 
   services.dunst = {
     enable = true;
@@ -90,14 +93,14 @@ in
   # start-limit-hit.
   systemd.user.services.dunst = {
     Unit = {
-      After = lib.mkForce [ ];
-      PartOf = lib.mkForce [ ];
+      After = lib.mkForce [];
+      PartOf = lib.mkForce [];
     };
-    Install.WantedBy = lib.mkForce [ ];
+    Install.WantedBy = lib.mkForce [];
   };
 
   # Clear the stale start-limit-hit state from previous failed starts.
-  home.activation.resetDunst = lib.hm.dag.entryAfter [ "reloadSystemd" ] ''
+  home.activation.resetDunst = lib.hm.dag.entryAfter ["reloadSystemd"] ''
     $DRY_RUN_CMD systemctl --user reset-failed dunst.service 2>/dev/null || true
   '';
 }

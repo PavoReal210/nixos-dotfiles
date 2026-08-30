@@ -2,15 +2,12 @@
   config,
   pkgs,
   ...
-}:
-
-let
+}: let
   c = config.lib.stylix.colors;
-in
-{
+in {
   # ── Hyprlock ──────────────────────────────────────────────────────────────
   # Hyprland-native lock screen. Uses stylix base16 colors.
-  home.packages = [ pkgs.hyprlock ];
+  home.packages = [pkgs.hyprlock];
 
   xdg.configFile."hypr/hyprlock.conf".text = ''
     # ── Background ─────────────────────────────────────────────────────────

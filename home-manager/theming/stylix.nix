@@ -2,8 +2,7 @@
   pkgs,
   osConfig,
   ...
-}:
-{
+}: {
   config = {
     stylix = {
       enable = true;

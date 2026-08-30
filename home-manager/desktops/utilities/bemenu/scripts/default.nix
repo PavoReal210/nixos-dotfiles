@@ -1,5 +1,4 @@
-{ ... }:
-{
+{...}: {
   imports = [
     ./powermenu.nix
     ./pia-selector.nix

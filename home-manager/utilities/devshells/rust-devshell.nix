@@ -7,8 +7,7 @@
 #   (enters a subshell with pinned Rust tools)
 #   $ exit
 #   (returns to normal shell)
-{ pkgs, ... }:
-let
+{pkgs, ...}: let
   rustDevShell = pkgs.mkShell {
     packages = with pkgs; [
       rustc
@@ -19,8 +18,7 @@ let
       cargo-edit
     ];
   };
-in
-{
+in {
   home.packages = [
     (pkgs.writeShellScriptBin "rs-dev" ''
       # Enter the pinned Rust dev environment

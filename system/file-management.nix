@@ -1,10 +1,6 @@
 # system/file-management.nix
 # Thunar file manager + archive support
-{
-  pkgs,
-  ...
-}:
-{
+{pkgs, ...}: {
   # ── File manager (Thunar) ────────────────────────────────────────────────────
 
   services.gvfs.enable = true;
@@ -13,7 +9,7 @@
 
   programs.thunar = {
     enable = true;
-    plugins = with pkgs; [
+    plugins = with pkgs.xfce; [
       thunar-archive-plugin
       thunar-vcs-plugin
       thunar-dropbox-plugin

@@ -14,7 +14,7 @@ This flake manages:
 - **Theme System**: Stylix (wallpaper-based)
 - **Notifications**: Dunst
 - **Secrets**: SOPS-nix for WiFi passwords, SSH keys, and other secrets
-- **Gaming**: Gamescope, Gamemode, Lutris, Heroic, MangoHud, RetroArch (with RetroAchievements)
+- **Gaming**: Gamescope, Gamemode, Lutris, MangoHud, RetroArch (with RetroAchievements)
 - **Virtualization**: libvirt/KVM with QEMU, TPM 2.0, Virt-Manager, and WinApps
 
 ## Desktop
@@ -73,7 +73,7 @@ nixos-dotfiles/
 │   ├── hardware-configuration.nix  # HW config (needs UUIDs)
 │   ├── boot.nix                    # Lanzaboote + secure boot
 │   ├── nvidia.nix                  # RTX 4060 Wayland config
-│   ├── gaming.nix                  # Gamescope, Gamemode, Lutris, Heroic, kernel tuning
+│   ├── gaming.nix                  # Gamescope, Gamemode, Lutris, kernel tuning
 │   ├── audio.nix                   # PipeWire + pamixer, pavucontrol, playerctl
 │   ├── bluetooth.nix               # Bluetooth + MT7921 fixes
 │   ├── default-desktop.nix         # Hyprland, XDG portals, Wayland env vars
@@ -202,7 +202,7 @@ The configuration includes a dedicated gaming module (`system/gaming.nix`) with:
 
 - **Gamescope**: Valve's gaming compositor for better frame pacing, HDR, and FSR upscaling
 - **Gamemode**: Feral Interactive's automatic CPU/IO performance optimizer
-- **Lutris + Heroic**: Game launchers for non-Steam games
+- **Lutris**: Game launcher for non-Steam games
 - **Steam**: Full Steam integration with Proton support
 - **Goverlay**: GUI for MangoHud (user-level, in `home-manager/utilities/common-packages.nix`)
 

@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{pkgs, ...}:
 pkgs.writeShellScriptBin "pia-status" ''
   STATUS=$(${pkgs.pia}/bin/pia status --short 2>/dev/null)
   if echo "$STATUS" | ${pkgs.gnugrep}/bin/grep -qiw "connected"; then

@@ -7,8 +7,7 @@
 #   (enters a subshell with pinned C/C++ tools)
 #   $ exit
 #   (returns to normal shell)
-{ pkgs, ... }:
-let
+{pkgs, ...}: let
   cDevShell = pkgs.mkShell {
     packages = with pkgs; [
       gcc
@@ -20,8 +19,7 @@ let
       pkg-config
     ];
   };
-in
-{
+in {
   home.packages = [
     (pkgs.writeShellScriptBin "c-dev" ''
       # Enter the pinned C/C++ dev environment

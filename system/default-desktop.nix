@@ -1,10 +1,6 @@
 # system/default-desktop.nix
 # Hyprland desktop: compositor, XDG portals, cursor, Wayland env vars
-{
-  pkgs,
-  ...
-}:
-{
+{pkgs, ...}: {
   programs.dconf.enable = true;
 
   programs.hyprland = {
@@ -21,14 +17,14 @@
 
   xdg.portal = {
     enable = true;
-    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+    extraPortals = [pkgs.xdg-desktop-portal-gtk];
     config = {
       hyprland = {
         "org.freedesktop.impl.portal.ScreenCast" = "hyprland";
         "org.freedesktop.impl.portal.Screenshot" = "hyprland";
-        default = [ "gtk" ];
+        default = ["gtk"];
       };
-      common.default = [ "gtk" ];
+      common.default = ["gtk"];
     };
   };
 

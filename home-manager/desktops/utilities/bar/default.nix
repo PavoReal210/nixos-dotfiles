@@ -1,4 +1,3 @@
-{ ... }:
-{
-  imports = [ ./waybar.nix ];
+{...}: {
+  imports = [./waybar.nix];
 }

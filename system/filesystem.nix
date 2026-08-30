@@ -1,10 +1,6 @@
 # system/filesystem.nix
 # Filesystem performance (BTRFS mount options)
-{
-  lib,
-  ...
-}:
-{
+{lib, ...}: {
   # ── Filesystem performance ───────────────────────────────────────────────────
   #
   # BTRFS optimizations for SSD + desktop workload:

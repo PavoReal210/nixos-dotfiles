@@ -1,6 +1,10 @@
 # system/nvidia.nix
 # NVIDIA RTX 4060 (Ada Lovelace) — Wayland/Hyprland optimized
-{ pkgs, ... }: {
+{
+  config,
+  pkgs,
+  ...
+}: {
   # ── Graphics stack ───────────────────────────────────────────────────────────
 
   hardware.graphics = {
@@ -10,25 +14,25 @@
 
   # ── NVIDIA driver ────────────────────────────────────────────────────────────
 
-  services.xserver.videoDrivers = [ "nvidia" ];
+  services.xserver.videoDrivers = ["nvidia"];
 
   hardware.nvidia = {
+    # Standard proprietary driver from nixpkgs, built against the configured
+    # kernel (see system/scheduler.nix).
+    package = config.boot.kernelPackages.nvidiaPackages.stable;
+
     modesetting.enable = true;
 
     open = false;
 
     nvidiaSettings = true;
 
-    # The current CachyOS NVIDIA package does not ship the
-    # `nvidia-sleep.sh` helper expected by NixOS's power-management module.
-    # Enabling it would create broken nvidia-suspend/resume services and block
-    # the entire suspend transaction. Suspend coordination is handled by
-    # system/suspend.nix instead.
-    powerManagement.enable = false;
+    # The standard nixpkgs driver ships `nvidia-sleep.sh`, so NixOS's
+    # built-in nvidia-suspend/resume services can save and restore VRAM.
+    powerManagement.enable = true;
 
     # finegrained enables RTD3 (Runtime D3) power management for Ada Lovelace.
     powerManagement.finegrained = false;
-
   };
 
   # ── Kernel modules ───────────────────────────────────────────────────────────
@@ -36,12 +40,6 @@
     "nvidia-drm.modeset=1"
     "nvidia-drm.fbdev=1"
   ];
-
-  # Tells the driver to save the VRAM contents to system RAM before sleep
-  # Work around is necessaru becasue nvidia-sleep.sh isn't part of the CatchyOS driver
-  boot.extraModprobeConfig = ''
-    options nvidia NVreg_PreserveVideoMemoryAllocations=1 NVreg_TemporaryFilePath=/var/tmp
-  '';
 
   # ── Wayland environment variables ────────────────────────────────────────────
 

@@ -1,7 +1,6 @@
 # home-manager/utilities/default.nix
 # Utilities shared across desktop configurations.
-{ ... }:
-{
+{...}: {
   imports = [
     ./anki.nix
     ./dunst.nix

@@ -1,28 +1,21 @@
 # home-manager/utilities/common-packages.nix
 # Common user packages
-{ pkgs, ... }: {
+{pkgs, ...}: {
   home.packages = with pkgs; [
     # GUI Applications
-    (pidgin.override { plugins = [ pidginPackages.purple-discord ]; }) # Discord via Pidgin (no Electron)
+    (pidgin.override {plugins = [pidginPackages.purple-discord];}) # Discord via Pidgin (no Electron)
     gimp # Image editing
     krita # Digital painting
     xournalpp # Handwritten notes and Org-mode figures
     libreoffice-qt6 # Office suite
-    atril # PDF reader
+    mate.atril # PDF reader
     picard # Music metadata editor
     prismlauncher # Minecraft launcher
     goverlay # GUI for MangoHud
     vlc # Media player
     strawberry # Music player
     qbittorrent # Torrent client
-    # font-manager 0.9.4 fails to compile with vala 0.56.19 (nixpkgs 26.11):
-    # the gtk4 vapi declares Gtk.DragIcon.get_for_drag as a creation method,
-    # so its call sites need the `new` operator. Not yet fixed upstream.
-    (font-manager.overrideAttrs (old: {
-      patches = (old.patches or [ ]) ++ [
-        ./patches/font-manager-0.9.4-dragicon-new.patch
-      ];
-    }))
+    font-manager # Font inspection and management
     # Manually select bitmaps for special fonts
     maestral # FOSS Dropbox CLI
     maestral-gui # FOSS Dropbox client
@@ -64,5 +57,5 @@
   # Default file manager for directories (xdg-open): Thunar is enabled
   # system-wide in system/file-management.nix via programs.thunar.
   xdg.mimeApps.enable = true;
-  xdg.mimeApps.defaultApplications."inode/directory" = [ "thunar.desktop" ];
+  xdg.mimeApps.defaultApplications."inode/directory" = ["thunar.desktop"];
 }

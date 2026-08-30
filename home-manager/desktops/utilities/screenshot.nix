@@ -1,8 +1,4 @@
-{
-  pkgs,
-  ...
-}:
-let
+{pkgs, ...}: let
   grimshot = "${pkgs.sway-contrib.grimshot}/bin/grimshot";
   shotDir = "$HOME/Pictures/Screenshots";
   timestamp = "$(date +%Y-%m-%d_%H%M%S)";
@@ -27,8 +23,7 @@ let
       notify-send -u critical "Screenshot" "Failed: $file"
     fi
   '';
-in
-{
+in {
   home.packages = [
     shot-full
     shot-area

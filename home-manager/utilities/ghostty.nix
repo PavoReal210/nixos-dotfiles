@@ -1,10 +1,6 @@
 # home-manager/utilities/ghostty.nix
 # Ghostty terminal configuration
-{
-  config,
-  ...
-}:
-{
+{config, ...}: {
   programs.ghostty = {
     enable = true;
     enableZshIntegration = true;

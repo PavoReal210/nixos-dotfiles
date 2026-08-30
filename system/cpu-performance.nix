@@ -37,7 +37,6 @@ in {
     # physically best cores for the workload. This should translate to higher
     # boost when single core is loaded.
     "amd_pstate.cppc_prefctrl=1"
-
   ];
 
   # ── CPU frequency governor ─────────────────────────────────────────────────────

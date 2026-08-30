@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{pkgs, ...}:
 pkgs.writeShellScriptBin "system-temps" ''
   CPU=$(${pkgs.lm_sensors}/bin/sensors -u 2>/dev/null | ${pkgs.gawk}/bin/awk '
     /^  temp[0-9]+_input:/ { if ($2 > max) max = $2 }

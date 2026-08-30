@@ -2,11 +2,9 @@
   config,
   pkgs,
   ...
-}:
-let
+}: let
   terminal = "ghostty";
-in
-{
+in {
   # ── Keybindings ────────────────────────────────────────────────────────────
   # Format: bind = MODS, KEY, DISPATCHER, ARGS
   # MODS: SUPER, SHIFT, CTRL, ALT (can combine with ,)
@@ -65,7 +63,7 @@ in
       "$modifier, t, exec, ${terminal}"
       "$modifier, Return, exec, ${terminal}"
       "$modifier, b, exec, ${pkgs.floorp-bin}/bin/floorp"
-      "$modifier SHIFT, e, exec, ${pkgs.thunar}/bin/thunar"
+      "$modifier SHIFT, e, exec, ${pkgs.xfce.thunar}/bin/thunar"
 
       # ── Screenshot (grimshot works on Hyprland) ──
       # Print Screen — save full screen to ~/Pictures/Screenshots

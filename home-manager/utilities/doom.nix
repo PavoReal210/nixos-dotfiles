@@ -1,10 +1,12 @@
 # home-manager/utilities/doom.nix
 # Doom Emacs via nix-doom-emacs-unstraightened
-{ inputs, pkgs, ... }:
-let
-  aspellEnv = pkgs.aspellWithDicts (dicts: with dicts; [ en es ]);
-in
 {
+  inputs,
+  pkgs,
+  ...
+}: let
+  aspellEnv = pkgs.aspellWithDicts (dicts: with dicts; [en es]);
+in {
   programs.doom-emacs = {
     enable = true;
     doomDir = inputs.doomdir;

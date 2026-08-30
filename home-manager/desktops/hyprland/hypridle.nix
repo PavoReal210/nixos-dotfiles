@@ -1,8 +1,4 @@
-{
-  pkgs,
-  ...
-}:
-{
+{pkgs, ...}: {
   # ── Hypridle ──────────────────────────────────────────────────────────────
   # Idle manager for Hyprland.
   #   900s  (15 min) — turn off displays (DPMS)
@@ -14,7 +10,7 @@
   # pauses ALL timers.
   #
   # To change timeouts, edit the 'timeout' values below (in seconds).
-  home.packages = [ pkgs.hypridle ];
+  home.packages = [pkgs.hypridle];
 
   xdg.configFile."hypr/hypridle.conf".text = ''
     general {

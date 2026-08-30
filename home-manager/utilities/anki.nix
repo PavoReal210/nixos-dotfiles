@@ -7,8 +7,7 @@
   config,
   pkgs,
   ...
-}:
-let
+}: let
   # "Multi-Line Type Answer Box - 2" (ankiweb id 1018107736), pinned from the
   # ankiweb download endpoint. tinycss/speedups.so is a macOS Mach-O binary
   # that can't load on Linux — tinycss falls back to pure Python — so we drop
@@ -20,7 +19,7 @@ let
       url = "https://ankiweb.net/shared/download/1018107736?v=2.1&p=1018107736";
       hash = "sha256-RKxt0n+0mo+xzgUEcOuiW8gfQD4QgzbyTpV2mmnsuXs=";
     };
-    nativeBuildInputs = [ pkgs.unzip ];
+    nativeBuildInputs = [pkgs.unzip];
     unpackPhase = ''
       unzip $src -d .
       rm -rf __MACOSX
@@ -28,50 +27,32 @@ let
     '';
   };
 
-  # "Image Occlusion Enhanced" (ankiweb id 1374772155) is packaged upstream in
-  # nixpkgs as pkgs.ankiAddons.image-occlusion-enhanced (v1.4.0, fetched from
-  # GitHub). The ankiweb download endpoint returns a file without a .zip
-  # extension, which buildAnkiAddon's default unpackPhase cannot unpack, so the
-  # upstream package is used instead of a hand-rolled fetchurl build.
-
-  # The current nixpkgs Anki package exports workspace development dependencies
-  # even for its root project. That project has no runtime dependencies, so
-  # skip its export and keep only the qt/pylib production dependency exports.
-  anki = pkgs.anki.overrideAttrs (old: {
-    buildPhase =
-      builtins.replaceStrings
-        [
-          "uv export --no-dev | strip_versions > requirements.txt"
-          "uv export --project qt --extra qt --extra audio"
-          "uv export --project pylib |"
-        ]
-        [
-          "printf '' > requirements.txt"
-          "uv export --project qt --extra qt --extra audio --no-dev --no-group dev"
-          "uv export --project pylib --no-dev --no-group dev |"
-        ]
-        old.buildPhase;
-
-    # pkgs.anki's original passthru captures the unpatched package. Replace
-    # its input in the addon wrapper so Home Manager uses this fixed package.
-    passthru = (old.passthru or { }) // {
-      withAddons =
-        addons:
-        (old.passthru.withAddons addons).overrideAttrs (_: {
-          paths = [ anki ];
-        });
+  # "Image Occlusion Enhanced" (ankiweb id 1374772155). Newer nixpkgs packages
+  # this as pkgs.ankiAddons.image-occlusion-enhanced, which nixos-25.11 does
+  # not ship yet, so the identical upstream packaging is done here.
+  image-occlusion-enhanced = pkgs.anki-utils.buildAnkiAddon (finalAttrs: {
+    pname = "image-occlusion-enhanced";
+    version = "1.4.0";
+    src = pkgs.fetchFromGitHub {
+      owner = "glutanimate";
+      repo = "image-occlusion-enhanced";
+      sparseCheckout = ["src/image_occlusion_enhanced"];
+      rev = "v${finalAttrs.version}";
+      hash = "sha256-YR1hicBDb08J+1Qc+SDiJDXLo5FzLqCQGeVe7brbPME=";
     };
+    sourceRoot = "${finalAttrs.src.name}/src/image_occlusion_enhanced";
   });
-in
-{
+in {
   programs.anki = {
     enable = true;
-    package = anki;
+    package = pkgs.anki;
     addons = [
       multi-line-type-answer-box
-      pkgs.ankiAddons.image-occlusion-enhanced
+      image-occlusion-enhanced
     ];
-    profiles."User 1".sync = {
+    # HM release-25.11 exposes sync config flat under `programs.anki.sync`
+    # (master later renamed this to `profiles."User 1".sync`).
+    sync = {
       usernameFile = config.sops.secrets.anki-username.path;
       keyFile = config.sops.secrets.anki-sync-key.path;
     };

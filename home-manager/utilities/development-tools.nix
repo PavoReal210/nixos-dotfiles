@@ -1,7 +1,6 @@
 # home-manager/utilities/development-tools.nix
 # Development tools and configurations
-{ pkgs, ... }:
-{
+{pkgs, ...}: {
   # Development packages
   home.packages = with pkgs; [
     # Rust
