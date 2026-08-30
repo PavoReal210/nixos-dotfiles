@@ -49,68 +49,74 @@
     };
   };
 
-  outputs = {
-    self,
-    nixpkgs,
-    home-manager,
-    lanzaboote,
-    sops-nix,
-    stylix,
-    cozette,
-    buuf-icon-theme,
-    hm-ricing-mode,
-    nix-doom-emacs-unstraightened,
-    pia,
-    winapps,
-    ...
-  } @ inputs: let
-    system = "x86_64-linux";
+  outputs =
+    {
+      self,
+      nixpkgs,
+      home-manager,
+      lanzaboote,
+      sops-nix,
+      stylix,
+      cozette,
+      buuf-icon-theme,
+      hm-ricing-mode,
+      nix-doom-emacs-unstraightened,
+      pia,
+      winapps,
+      ...
+    }@inputs:
+    let
+      system = "x86_64-linux";
 
-    # These overlays are shared by NixOS and the integrated Home Manager
-    # configuration because both now evaluate against the same pkgs set.
-    sharedOverlays = [
-      nix-doom-emacs-unstraightened.overlays.default
-      (final: prev: {cozette = inputs.cozette.packages.${system}.default;})
-      (final: prev: {
-        buuf-icon-theme = inputs.buuf-icon-theme.packages.${system}.default;
-      })
-      (final: prev: {pia = inputs.pia.packages.${system}.pia;})
-    ];
-  in {
-    formatter.${system} = nixpkgs.legacyPackages.${system}.alejandra;
+      # These overlays are shared by NixOS and the integrated Home Manager
+      # configuration because both now evaluate against the same pkgs set.
+      sharedOverlays = [
+        nix-doom-emacs-unstraightened.overlays.default
+        (final: prev: { cozette = inputs.cozette.packages.${system}.default; })
+        (final: prev: {
+          buuf-icon-theme = inputs.buuf-icon-theme.packages.${system}.default;
+        })
+        (final: prev: { pia = inputs.pia.packages.${system}.pia; })
+      ];
+    in
+    {
+      formatter.${system} = nixpkgs.legacyPackages.${system}.alejandra;
 
-    nixosConfigurations = {
-      railgun = nixpkgs.lib.nixosSystem {
-        specialArgs = {inherit inputs system;};
-        modules = [
-          ({...}: {
-            # NixOS and Home Manager intentionally share this package set.
-            nixpkgs.overlays = sharedOverlays;
+      nixosConfigurations = {
+        railgun = nixpkgs.lib.nixosSystem {
+          specialArgs = { inherit inputs system; };
+          modules = [
+            ({ ... }: {
+              # NixOS and Home Manager intentionally share this package set.
+              nixpkgs.overlays = sharedOverlays;
 
-            # Home Manager is part of the NixOS activation now. A normal
-            # `nixos-rebuild switch` rebuilds and activates both layers.
-            home-manager = {
-              useGlobalPkgs = true;
-              useUserPackages = true;
-              extraSpecialArgs = {inherit inputs;};
-              users.railgun = {
-                imports = [
-                  nix-doom-emacs-unstraightened.homeModule
-                  hm-ricing-mode.homeManagerModules.hm-ricing-mode
-                  sops-nix.homeManagerModules.sops
-                  ./home-manager/home.nix
-                ];
+              # Home Manager is part of the NixOS activation now. A normal
+              # `nixos-rebuild switch` rebuilds and activates both layers.
+              home-manager = {
+                useGlobalPkgs = true;
+                useUserPackages = true;
+                # Back up unmanaged conflicting files (e.g. ~/.config/Kvantum)
+                # instead of failing activation with "would be clobbered".
+                backupFileExtension = "backup";
+                extraSpecialArgs = { inherit inputs; };
+                users.railgun = {
+                  imports = [
+                    nix-doom-emacs-unstraightened.homeModule
+                    hm-ricing-mode.homeManagerModules.hm-ricing-mode
+                    sops-nix.homeManagerModules.sops
+                    ./home-manager/home.nix
+                  ];
+                };
               };
-            };
-          })
-          ./system/configuration.nix
-          home-manager.nixosModules.home-manager
-          pia.nixosModules.default
-          lanzaboote.nixosModules.lanzaboote
-          sops-nix.nixosModules.sops
-          stylix.nixosModules.stylix
-        ];
+            })
+            ./system/configuration.nix
+            home-manager.nixosModules.home-manager
+            pia.nixosModules.default
+            lanzaboote.nixosModules.lanzaboote
+            sops-nix.nixosModules.sops
+            stylix.nixosModules.stylix
+          ];
+        };
       };
     };
-  };
 }
