@@ -15,6 +15,9 @@
     tree
     ntfs3g
 
+    # LaTeX rendering (needed by Anki for traditional [latex]...[/latex] cards)
+    dvipng
+
     # Text editors
     vim
 
