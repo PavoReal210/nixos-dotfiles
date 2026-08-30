@@ -16,6 +16,7 @@
 
     # Center floating popup windows (save dialogs, settings, etc.)
     windowrulev2 = center, class:^(floorp)$, floating:1
+    windowrulev2 = center, class:^(anki)$, floating:1
 
     # Disable blur for transparent terminals and editors
     windowrulev2 = noblur, class:^(com\.mitchellh\.ghostty)$
