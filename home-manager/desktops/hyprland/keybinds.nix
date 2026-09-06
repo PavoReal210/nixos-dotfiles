@@ -49,6 +49,7 @@ in {
       "$modifier, space, togglefloating"
       "$modifier SHIFT, space, focusurgentorlast"
       "$modifier, q, killactive"
+      "$modifier SHIFT, q, exec, hyprctl kill"
 
       # ── Layout Modes ──
       # stacking/tabbed → togglegroup
