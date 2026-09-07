@@ -124,9 +124,11 @@ nixos-dotfiles/
     │
     ├── utilities/                  # User applications and CLI tools
     │   ├── common-packages.nix     # The main list of installed apps (gimp, vlc, bat, eza, etc.)
+    │   ├── default-apps.nix        # XDG MIME default app associations (file manager, MS Office formats → LibreOffice)
     │   ├── development-tools.nix   # Dev tools: Rust, Python, C/C++, Nix LSP, LaTeX
     │   ├── devshells/              # Isolated dev environments (enter with `nix develop`)
     │   │   ├── c-general-devshell.nix
+    │   │   ├── ml-devshell.nix         # ML stack: numpy, pandas, sklearn, scipy, matplotlib, seaborn, jupyterlab (`ml-dev`)
     │   │   ├── python-devshell.nix
     │   │   └── rust-devshell.nix
     │   ├── doom.nix                # Doom Emacs via nix-doom-emacs-unstraightened

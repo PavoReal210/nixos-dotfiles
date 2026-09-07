@@ -29,6 +29,26 @@
     ];
   };
 
+  # Declaratively pin the HP OfficeJet Pro 9010.
+  # Uses HPLIP's hp:// backend + hpcups PPD so CUPS outputs HP raster format
+  # instead of PostScript (which this inkjet cannot interpret).
+  # zc= uses mDNS/zeroconf so the config survives DHCP address changes.
+  hardware.printers = {
+    ensurePrinters = [
+      {
+        name = "HP_OfficeJet_Pro_9010";
+        location = "Local Network";
+        deviceUri = "hp:/net/HP_OfficeJet_Pro_9010_series?zc=HP_OfficeJet_Pro_9010_series_5D3821";
+        model = "drv:///hpcups.drv/hp-officejet_pro_9010_series.ppd";
+        ppdOptions = {
+          PageSize = "Letter";
+          Duplex = "None";
+        };
+      }
+    ];
+    ensureDefaultPrinter = "HP_OfficeJet_Pro_9010";
+  };
+
   # GTK administration client for adding and managing CUPS printers.
   environment.systemPackages = [
     pkgs.system-config-printer

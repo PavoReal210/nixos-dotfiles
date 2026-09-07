@@ -29,6 +29,8 @@
     liberation_ttf
 
     # Document Fonts
+    corefonts    # Arial, Courier New, Times New Roman, Verdana, Georgia, etc.
+    vista-fonts  # Calibri, Cambria, Consolas, Candara, Constantia, Corbel
     et-book
     scientifica
 

@@ -4,6 +4,7 @@
 {...}: {
   imports = [
     ./c-general-devshell.nix
+    ./ml-devshell.nix
     ./python-devshell.nix
     ./rust-devshell.nix
   ];
